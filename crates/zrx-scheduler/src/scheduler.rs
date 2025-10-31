@@ -31,7 +31,6 @@ use zrx_executor::strategy::WorkSharing;
 use zrx_executor::{self, Strategy};
 
 pub mod action;
-pub mod builder;
 pub mod effect;
 mod executor;
 pub mod graph;
