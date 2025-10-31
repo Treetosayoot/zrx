@@ -29,7 +29,6 @@ on:
       - opened
       - synchronize
       - reopened
-  push:
 
 jobs:
   lint:
@@ -52,8 +51,7 @@ jobs:
           head="${{ github.event.pull_request.head.sha }}"
 
           echo "Getting commits from ${base}..${head}"
-          git log "${base}..${head}" \
-            --pretty=format:"%s" > commits.txt
+          git log "${base}..${head}" --pretty=format:"%s" > commits.txt
 
       - name: Run commit message linter
         run: |
