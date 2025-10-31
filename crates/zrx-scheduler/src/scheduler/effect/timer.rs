@@ -218,6 +218,7 @@ impl<I> Timer<I> {
 #[allow(clippy::must_use_candidate)]
 impl<I> Timer<I> {
     /// Returns a reference to the outputs to emit, if any.
+    #[allow(clippy::match_same_arms)]
     #[inline]
     pub fn data(&self) -> Option<&Outputs<I>> {
         match self {

@@ -67,6 +67,7 @@ impl<I> Timers<I> {
     }
 
     /// Submits a timer.
+    #[allow(clippy::match_same_arms)]
     pub fn submit(&mut self, token: Token, timer: Timer<I>) {
         match timer {
             // Timer should be set, but not reset - we only overwrite the data
