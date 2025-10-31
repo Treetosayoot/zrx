@@ -213,6 +213,10 @@ def main():
     else:
         message = commit.strip()
 
+    # Skip merge commits
+    if message.startswith("Merge branch"):
+        return sys.exit(0)
+
     # Resolve cargo workspace members and parse commit message
     scopes = resolve(os.path.curdir)
     scopes["workspace"] = "."
