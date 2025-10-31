@@ -40,9 +40,24 @@ all = { level = "warn", priority = -1 }
 pedantic = { level = "warn", priority = -1 }
 
 [workspace.dependencies]
+zrx-diagnostic = { version = "0.0.0", path = "crates/zrx-diagnostic" }
+zrx-event = { version = "0.0.0", path = "crates/zrx-event" }
+zrx-executor = { version = "0.0.0", path = "crates/zrx-executor" }
+zrx-graph = { version = "0.0.0", path = "crates/zrx-graph" }
 zrx-id = { version = "0.0.2", path = "crates/zrx-id" }
 zrx-path = { version = "0.0.0", path = "crates/zrx-path" }
+zrx-scheduler = { version = "0.0.0", path = "crates/zrx-scheduler" }
+zrx-store = { version = "0.0.0", path = "crates/zrx-store" }
+zrx-stream = { version = "0.0.0", path = "crates/zrx-stream" }
 
+ahash = "0.8.12"
+crossbeam = "0.8.4"
+file-id = "0.2.3"
 globset = "0.4.18"
+litemap = "0.8.1"
+notify = "8.2.0"
 percent-encoding = "2.3.2"
+slab = "0.4.11"
 thiserror = "2.0.17"
+tracing = "0.1.41"
+walkdir = "2.5.0"
