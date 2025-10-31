@@ -45,8 +45,8 @@ jobs:
       - name: Run clippy
         run: cargo clippy
 
-      - name: Run formatter
-        run: cargo fmt --all -- --check
+      - name: Run rustfmt
+        run: rustfmt crates/**/*.rs --check
 
   security:
     name: Security audit
