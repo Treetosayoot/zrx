@@ -57,5 +57,5 @@ jobs:
         run: |
           while IFS= read -r commit; do
             echo "Linting commit message: $commit"
-            python3 lint.py "$commit"
+            scripts/commit.py "$commit"
           done < commits.txt
