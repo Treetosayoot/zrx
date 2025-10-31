@@ -21,37 +21,41 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
-name: Build
+name: Commit
 
 on:
   pull_request:
-  push:
-    branches:
-      - master
+    types:
+      - opened
+      - synchronize
+      - reopened
 
 jobs:
-  tests:
-    name: Test (${{ matrix.os }}, ${{ matrix.rust }})
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        rust: [stable, 1.86.0]
-        os:
-          - ubuntu-latest
-          - windows-latest
-          - macos-latest
-
+  lint:
+    name: Lint commit messages
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
-
-      - name: Set up Rust
-        uses: dtolnay/rust-toolchain@master
         with:
-          toolchain: ${{ matrix.rust }}
+          fetch-depth: 0
 
-      - name: Set up Rust cache
-        uses: Swatinem/rust-cache@v2
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.x
 
-      - name: Run tests
-        run: cargo test
+      - name: Get commit messages
+        run: |
+          base="${{ github.event.pull_request.base.sha }}"
+          head="${{ github.event.pull_request.head.sha }}"
+
+          echo "Getting commits from ${base}..${head}"
+          git log "${base}..${head}" --pretty=format:"%s" > commits.txt
+
+      - name: Run commit message linter
+        run: |
+          while IFS= read -r commit; do
+            echo "Linting commit message: $commit"
+            scripts/commit.py "$commit"
+          done < commits.txt
