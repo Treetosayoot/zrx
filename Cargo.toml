@@ -32,7 +32,7 @@ rust-version = "1.85"
 homepage = "https://github.com/zensical/zrx"
 documentation = "https://github.com/zensical/zrx"
 repository = "https://github.com/zensical/zrx"
-authors = ["Zensical <contributors@zensical.org>"]
+authors = ["Zensical LLC <contributors@zensical.org>"]
 license = "MIT"
 
 [workspace.lints.clippy.all]
@@ -47,7 +47,6 @@ priority = -1
 zrx-id = { path = "crates/zrx-id" }
 zrx-path = { path = "crates/zrx-path" }
 
-# Runtime
 globset = "0.4.18"
 percent-encoding = "2.3.2"
 thiserror = "2.0.17"
