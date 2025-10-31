@@ -24,7 +24,7 @@
 
 [package]
 name = "zrx-path"
-version = "0.0.0"
+version = "0.0.1"
 description = "Path utilities and conversions"
 edition.workspace = true
 rust-version.workspace = true
