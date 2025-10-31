@@ -27,7 +27,7 @@ resolver = "3"
 members = ["crates/*"]
 
 [workspace.package]
-edition = "2024"
+edition = "2021"
 rust-version = "1.85"
 homepage = "https://github.com/zensical/zrx"
 documentation = "https://github.com/zensical/zrx"

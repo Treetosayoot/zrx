@@ -21,7 +21,6 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
-
 fn_params_layout = "compressed"
 max_width = 80
 struct_lit_width = 30
