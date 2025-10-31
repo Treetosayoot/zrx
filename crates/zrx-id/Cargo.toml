@@ -23,32 +23,24 @@
 # IN THE SOFTWARE.
 
 
-[workspace]
-resolver = "3"
-members = ["crates/*"]
+[package]
+name = "zrx-id"
+version = "0.0.2"
+description = "Identifier abstractions and utilities"
+edition.workspace = true
+rust-version.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+repository.workspace = true
+authors.workspace = true
+license.workspace = true
 
-[workspace.package]
-edition = "2024"
-rust-version = "1.85"
-homepage = "https://github.com/zensical/zrx"
-documentation = "https://github.com/zensical/zrx"
-repository = "https://github.com/zensical/zrx"
-authors = ["Zensical <contributors@zensical.org>"]
-license = "MIT"
+[lints]
+workspace = true
 
-[workspace.lints.clippy.all]
-level = "warn"
-priority = -1
+[dependencies]
+zrx-path.workspace = true
 
-[workspace.lints.clippy.pedantic]
-level = "warn"
-priority = -1
-
-[workspace.dependencies]
-zrx-id = { path = "crates/zrx-id" }
-zrx-path = { path = "crates/zrx-path" }
-
-# Runtime
-globset = "0.4.18"
-percent-encoding = "2.3.2"
-thiserror = "2.0.17"
+globset.workspace = true
+percent-encoding.workspace = true
+thiserror.workspace = true

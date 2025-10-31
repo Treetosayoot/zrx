@@ -1,0 +1,382 @@
+// Copyright (c) Zensical LLC <https://zensical.org>
+
+// SPDX-License-Identifier: MIT
+// Third-party contributions licensed under CLA
+// Source code: <https://github.com/zensical/zrx>
+
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to
+// deal in the Software without restriction, including without limitation the
+// rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+// sell copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+// IN THE SOFTWARE.
+
+// ----------------------------------------------------------------------------
+
+//! Identifier builder.
+
+use std::borrow::Cow;
+use std::hash::{DefaultHasher, Hash, Hasher};
+use std::sync::Arc;
+
+use super::error::{Error, Result};
+use super::format::{self, Format};
+use super::Id;
+
+// ----------------------------------------------------------------------------
+// Structs
+// ----------------------------------------------------------------------------
+
+/// Identifier builder.
+#[derive(Clone, Debug, Default)]
+pub struct Builder<'a> {
+    /// Format builder.
+    format: format::Builder<'a, 7>,
+}
+
+// ----------------------------------------------------------------------------
+// Implementations
+// ----------------------------------------------------------------------------
+
+impl<'a> Builder<'a> {
+    /// Creates an identifier builder.
+    ///
+    /// Note that the canonical way to create an [`Id`] is to invoke the
+    /// [`Id::builder`] method, which creates an instance of [`Builder`].
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use zrx_id::Builder;
+    ///
+    /// // Create identifier builder
+    /// let mut builder = Builder::new();
+    /// ```
+    #[must_use]
+    pub fn new() -> Self {
+        Self {
+            format: Format::builder().with(0, "zri"),
+        }
+    }
+
+    /// Updates the `provider` component.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use zrx_id::Id;
+    ///
+    /// // Create identifier builder and set provider
+    /// let mut builder = Id::builder().with_provider("git");
+    /// ```
+    #[inline]
+    #[must_use]
+    pub fn with_provider<S>(mut self, value: S) -> Self
+    where
+        S: Into<Cow<'a, str>>,
+    {
+        self.set_provider(value);
+        self
+    }
+
+    /// Updates the `resource` component.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use zrx_id::Id;
+    ///
+    /// // Create identifier builder and set resource
+    /// let mut builder = Id::builder().with_resource("master");
+    /// ```
+    #[inline]
+    #[must_use]
+    pub fn with_resource<S>(mut self, value: S) -> Self
+    where
+        S: Into<Cow<'a, str>>,
+    {
+        self.set_resource(value);
+        self
+    }
+
+    /// Updates the `variant` component.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use zrx_id::Id;
+    ///
+    /// // Create identifier builder and set variant
+    /// let mut builder = Id::builder().with_variant("en");
+    /// ```
+    #[inline]
+    #[must_use]
+    pub fn with_variant<S>(mut self, value: S) -> Self
+    where
+        S: Into<Cow<'a, str>>,
+    {
+        self.set_variant(value);
+        self
+    }
+
+    /// Updates the `context` component.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use zrx_id::Id;
+    ///
+    /// // Create identifier builder and set context
+    /// let mut builder = Id::builder().with_context("docs");
+    /// ```
+    #[inline]
+    #[must_use]
+    pub fn with_context<S>(mut self, value: S) -> Self
+    where
+        S: Into<Cow<'a, str>>,
+    {
+        self.set_context(value);
+        self
+    }
+
+    /// Updates the `location` component.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use zrx_id::Id;
+    ///
+    /// // Create identifier builder and set location
+    /// let mut builder = Id::builder().with_location("docs");
+    /// ```
+    #[inline]
+    #[must_use]
+    pub fn with_location<S>(mut self, value: S) -> Self
+    where
+        S: Into<Cow<'a, str>>,
+    {
+        self.set_location(value);
+        self
+    }
+
+    /// Updates the `fragment` component.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use zrx_id::Id;
+    ///
+    /// // Create identifier builder and set fragment
+    /// let mut builder = Id::builder().with_fragment("anchor");
+    /// ```
+    #[inline]
+    #[must_use]
+    pub fn with_fragment<S>(mut self, value: S) -> Self
+    where
+        S: Into<Cow<'a, str>>,
+    {
+        self.set_fragment(value);
+        self
+    }
+
+    /// Updates the `provider` component.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use zrx_id::Id;
+    ///
+    /// // Create identifier builder and set provider
+    /// let mut builder = Id::builder();
+    /// builder.set_provider("git");
+    /// ```
+    #[inline]
+    pub fn set_provider<S>(&mut self, value: S) -> &mut Self
+    where
+        S: Into<Cow<'a, str>>,
+    {
+        self.format.set(1, value);
+        self
+    }
+
+    /// Updates the `resource` component.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use zrx_id::Id;
+    ///
+    /// // Create identifier builder and set resource
+    /// let mut builder = Id::builder();
+    /// builder.set_resource("master");
+    /// ```
+    #[inline]
+    pub fn set_resource<S>(&mut self, value: S) -> &mut Self
+    where
+        S: Into<Cow<'a, str>>,
+    {
+        self.format.set(2, value);
+        self
+    }
+
+    /// Updates the `variant` component.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use zrx_id::Id;
+    ///
+    /// // Create identifier builder and set variant
+    /// let mut builder = Id::builder();
+    /// builder.set_variant("en");
+    /// ```
+    #[inline]
+    pub fn set_variant<S>(&mut self, value: S) -> &mut Self
+    where
+        S: Into<Cow<'a, str>>,
+    {
+        self.format.set(3, value);
+        self
+    }
+
+    /// Updates the `context` component.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use zrx_id::Id;
+    ///
+    /// // Create identifier builder and set context
+    /// let mut builder = Id::builder();
+    /// builder.set_context("docs");
+    /// ```
+    #[inline]
+    pub fn set_context<S>(&mut self, value: S) -> &mut Self
+    where
+        S: Into<Cow<'a, str>>,
+    {
+        self.format.set(4, value);
+        self
+    }
+
+    /// Updates the `location` component.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use zrx_id::Id;
+    ///
+    /// // Create identifier builder and set location
+    /// let mut builder = Id::builder();
+    /// builder.set_location("docs");
+    /// ```
+    #[inline]
+    pub fn set_location<S>(&mut self, value: S) -> &mut Self
+    where
+        S: Into<Cow<'a, str>>,
+    {
+        self.format.set(5, value);
+        self
+    }
+
+    /// Updates the `fragment` component.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use zrx_id::Id;
+    ///
+    /// // Create identifier builder and set fragment
+    /// let mut builder = Id::builder();
+    /// builder.set_fragment("anchor");
+    /// ```
+    #[inline]
+    pub fn set_fragment<S>(&mut self, value: S) -> &mut Self
+    where
+        S: Into<Cow<'a, str>>,
+    {
+        self.format.set(6, value);
+        self
+    }
+
+    /// Builds the identifier.
+    ///
+    /// # Errors
+    ///
+    /// This method returns [`Error::Path`], if a component value contains a
+    /// backslash or traversal, or [`Error::Format`], if the format is invalid.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use std::error::Error;
+    /// # fn main() -> Result<(), Box<dyn Error>> {
+    /// use zrx_id::Id;
+    ///
+    /// // Create identifier builder
+    /// let mut builder = Id::builder();
+    /// builder.set_provider("file");
+    /// builder.set_context("docs");
+    /// builder.set_location("index.md");
+    ///
+    /// // Create identifier from builder
+    /// let id = builder.build()?;
+    /// assert_eq!(id.as_str(), "zri:file:::docs:index.md:");
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub fn build(self) -> Result<Id> {
+        let format = self.format.build()?;
+
+        // Ensure provider is set
+        if format.get(1).is_empty() {
+            Err(Error::Component("provider"))?;
+        }
+
+        // Ensure context is set
+        if format.get(4).is_empty() {
+            Err(Error::Component("context"))?;
+        }
+
+        // Ensure location is set
+        if format.get(5).is_empty() {
+            Err(Error::Component("location"))?;
+        }
+
+        // Precompute hash for fast hashing
+        let hash = {
+            let mut hasher = DefaultHasher::new();
+            format.hash(&mut hasher);
+            hasher.finish()
+        };
+
+        // No errors occurred
+        Ok(Id { format: Arc::new(format), hash })
+    }
+}
+
+// ----------------------------------------------------------------------------
+// Trait implementations
+// ----------------------------------------------------------------------------
+
+impl<'a> From<format::Builder<'a, 7>> for Builder<'a> {
+    /// Creates an identifier builder from a formatted string builder.
+    ///
+    /// This implementation is primarily provided for [`Id::to_builder`],
+    /// which allows to convert an [`Id`] back into a builder.
+    #[inline]
+    fn from(builder: format::Builder<'a, 7>) -> Self {
+        Self { format: builder.with(0, "zri") }
+    }
+}
