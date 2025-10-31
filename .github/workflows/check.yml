@@ -31,7 +31,7 @@ on:
 
 jobs:
   checks:
-    name: Lint and format check
+    name: Lint and format
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -54,6 +54,9 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
+
+      - name: Set up Rust cache
+        uses: Swatinem/rust-cache@v2
 
       - name: Install cargo-audit
         run: cargo install cargo-audit
