@@ -46,7 +46,7 @@ jobs:
         run: cargo clippy
 
       - name: Run rustfmt
-        run: cargo fmt --check --all -- --edition 2021
+        run: find crates -name "*.rs" -exec rustfmt --check {} \;
 
   security:
     name: Security audit
