@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+# -----------------------------------------------------------------------------
+
 # Copyright (c) Zensical LLC <https://zensical.org>
 
 # SPDX-License-Identifier: MIT
