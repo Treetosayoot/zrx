@@ -21,7 +21,6 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
-# Git settings
 [git]
 conventional_commits = true
 filter_unconventional = true
@@ -46,7 +45,6 @@ commit_parsers = [
   { message = "^release", group = "Release", skip = true },
 ]
 
-# Changelog settings
 [changelog]
 trim = true
 render_always = true
