@@ -262,7 +262,7 @@ impl<T> Graph<T> {
     /// # }
     /// ```
     #[inline]
-    pub fn sources(&self) -> impl Iterator<Item = usize> + '_ {
+    pub fn sources(&self) -> impl Iterator<Item = usize> {
         let incoming = self.topology.incoming();
         incoming.iter().filter(|&node| incoming[node].is_empty())
     }
@@ -300,7 +300,7 @@ impl<T> Graph<T> {
     /// # }
     /// ```
     #[inline]
-    pub fn sinks(&self) -> impl Iterator<Item = usize> + '_ {
+    pub fn sinks(&self) -> impl Iterator<Item = usize> {
         let outgoing = self.topology.outgoing();
         outgoing.iter().filter(|&node| outgoing[node].is_empty())
     }

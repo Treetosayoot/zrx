@@ -109,7 +109,7 @@ impl Sessions {
 
     /// Returns the actions for the given session identifier.
     #[inline]
-    pub fn get(&self, id: usize) -> impl Iterator<Item = usize> + '_ {
+    pub fn get(&self, id: usize) -> impl Iterator<Item = usize> {
         self.items.get(&id).into_iter().flatten().copied()
     }
 
