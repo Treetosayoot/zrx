@@ -21,6 +21,7 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
+edition = "2021"
 fn_params_layout = "compressed"
 max_width = 80
 struct_lit_width = 30

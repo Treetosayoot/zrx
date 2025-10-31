@@ -46,7 +46,7 @@ jobs:
         run: cargo clippy
 
       - name: Run rustfmt
-        run: rustfmt crates/**/*.rs --check
+        run: cargo fmt --check --all
 
   security:
     name: Security audit
