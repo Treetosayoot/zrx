@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+# -----------------------------------------------------------------------------
+
 # Copyright (c) Zensical LLC <https://zensical.org>
 
 # SPDX-License-Identifier: MIT
@@ -23,11 +25,7 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
-import json
-import os
-import re
-import sys
-import tomllib
+import os, re, sys, tomllib  # noqa: E401
 
 from dataclasses import dataclass
 from glob import glob
@@ -63,15 +61,6 @@ class Message:
     def parse(cls, message: str) -> "Message":
         """
         Parse a commit message string into an object.
-
-        Arguments:
-            message (str): The commit message.
-
-        Returns:
-            Message: A parsed object.
-
-        Raises:
-            ValueError: If the commit message format is invalid.
         """
         match = re.match(r"^([^:]+):([^\s]+) - (.+)$", message)
         if not match:
@@ -84,12 +73,6 @@ class Message:
     def validate(self, scopes: dict[str, str]) -> None:
         """
         Validate the commit message against the given scopes and types.
-
-        Arguments:
-            scopes (dict[str, str]): Mapping of valid commit scopes.
-
-        Raises:
-            ValueError: If the commit message is invalid.
         """
         if self.scope not in scopes:
             raise ScopeError(f"Invalid scope: {self.scope}")
@@ -102,8 +85,11 @@ class Message:
         if self.description != self.description.lower():
             raise ValueError("Commit message must be lowercased.")
 
+        # Retrieve staged files
+        with os.popen("git diff --cached --name-only") as p:
+            output = p.read()
+
         # Validate if files are within scope
-        output = os.popen("git diff --cached --name-only").read()
         for file in output.strip().split("\n"):
             if not f"./{file}".startswith(scopes[self.scope]):
                 raise ValueError(
@@ -132,7 +118,7 @@ class Message:
 # ----------------------------------------------------------------------------
 
 
-def resolve_cargo(directory: str) -> dict[str, str] | None:
+def resolve(directory: str) -> dict[str, str] | None:
     """
     Return commit scopes for a cargo project.
 
@@ -140,12 +126,6 @@ def resolve_cargo(directory: str) -> dict[str, str] | None:
     and if so, parses it to extract the workspace members. It then resolves the
     valid scopes, which are the names of the crates defined in the respective
     `Cargo.toml` files.
-
-    Arguments:
-        directory (str): The directory to check for `Cargo.toml`.
-
-    Returns:
-        dict[str, str] | None: Mapping of valid commit scopes.
     """
     path = os.path.join(directory, "Cargo.toml")
     if not os.path.isfile(path):
@@ -163,7 +143,7 @@ def resolve_cargo(directory: str) -> dict[str, str] | None:
         for member in content["workspace"].get("members", []):
             path = os.path.join(directory, member)
             for match in glob(path):
-                nested = resolve_cargo(match)
+                nested = resolve(match)
                 if nested:
                     scopes.update(nested)
 
@@ -174,54 +154,6 @@ def resolve_cargo(directory: str) -> dict[str, str] | None:
     package = content.get("package")
     if package and "name" in package:
         return {package["name"]: directory}
-
-
-def resolve_npm(directory: str) -> dict[str, str] | None:
-    """
-    Return commit scopes for an npm project.
-
-    This function checks if the given directory contains a `package.json` file,
-    and if so, parses it to extract the workspace members. It then resolves the
-    valid scopes, which are the names of the packages defined in the respective
-    `package.json` files.
-
-    Arguments:
-        directory (str): The directory to check for `package.json`.
-
-    Returns:
-        list[str] | None: Mapping of valid commit scopes.
-    """
-    path = os.path.join(directory, "package.json")
-    if not os.path.isfile(path):
-        return
-
-    # Open and parse the package.json file
-    with open(path, "rb") as f:
-        content = json.load(f)
-
-    # Return workspace members
-    if "workspaces" in content:
-        scopes: dict[str, str] = []
-
-        # Get the list of member packages
-        for member in content["workspaces"]:
-            path = os.path.join(directory, member)
-            for match in glob.glob(path):
-                nested = resolve_npm(match)
-                if nested:
-                    scopes.update(nested)
-
-        # Return commit scopes
-        return scopes
-
-    # Return package
-    if "name" in content:
-        name = content["name"]
-        if name.startswith("@"):
-            name = name.split("/", 1)[-1]
-
-        # Return package name without scope
-        return {name: directory}
 
 
 # ----------------------------------------------------------------------------
@@ -283,8 +215,12 @@ def main():
     else:
         message = commit.strip()
 
-    # Try to resolve Rust or Node project, and add top-level scope
-    scopes = resolve_cargo(os.path.curdir) or resolve_npm(os.path.curdir)
+    # Skip merge commits
+    if message.startswith("Merge branch"):
+        return sys.exit(0)
+
+    # Resolve cargo workspace members and parse commit message
+    scopes = resolve(os.path.curdir)
     scopes["workspace"] = "."
     try:
         msg = Message.parse(message)
