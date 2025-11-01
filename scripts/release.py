@@ -36,7 +36,7 @@ from enum import IntEnum
 
 class Bump(IntEnum):
     """
-    Bump.
+    Bump suggestion.
     """
 
     PATCH = 0
@@ -76,7 +76,7 @@ def resolve():
 
 def bump(name: str) -> Bump | None:
     """
-    Return bump for given crate.
+    Return bump suggestion for given crate.
     """
     args = f'--include-path "crates/{name}/**" --unreleased --context'
     with os.popen(f"git cliff -c .gitcliff.toml {args}") as p:
@@ -87,7 +87,7 @@ def bump(name: str) -> Bump | None:
     if not commits:
         return None
 
-    # Determine bump
+    # Determine bump suggestion
     value = Bump.PATCH
     for commit in commits:
         # Check for breaking changes
@@ -99,13 +99,13 @@ def bump(name: str) -> Bump | None:
             if value < Bump.MINOR:
                 value = Bump.MINOR
 
-    # Return bump
+    # Return bump suggestion
     return value
 
 
 def version(current: str, level: Bump) -> str:
     """
-    tbd
+    Compute new version given current version and bump suggestion.
     """
     match = re.match(r"^(\d+)\.(\d+)\.(\d+)$", current)
     if not match:
@@ -135,7 +135,7 @@ def version(current: str, level: Bump) -> str:
 
 def main():
     """
-    Create a new release.
+    Bump all changed packages and their dependents.
     """
     versions, dependents = resolve()
 
@@ -164,8 +164,7 @@ def main():
             elif level is not None:
                 levels[dependent] = level
 
-    # @todo: dependents should only be bumped if necessary, which is not the
-    # case if the are at least on 0.x.y and we have a patch release
+    # Set versions for direct and transitive dependents
     for name, level in levels.items():
         value = version(versions[name], level)
         os.system(f"cargo set-version {value} --package {name}")
