@@ -31,15 +31,18 @@ on:
 
 jobs:
   tests:
-    name: Test (${{ matrix.os }}, ${{ matrix.rust }})
-    runs-on: ${{ matrix.os }}
+    name: Test (${{ matrix.os.name }}, ${{ matrix.rust }})
+    runs-on: ${{ matrix.os.id }}
     strategy:
       matrix:
         rust: [stable, 1.86.0]
         os:
-          - ubuntu-latest
-          - windows-latest
-          - macos-latest
+          - id: ubuntu-latest
+            name: Linux
+          - id: windows-latest
+            name: Windows
+          - id: macos-latest
+            name: macOS
 
     steps:
       - name: Checkout repository
