@@ -1,8 +1,7 @@
-Copyright (c) Zensical LLC <https://zensical.org>
+Copyright (c) Zensical LLC
 
-SPDX-License-Identifier: MIT
-Third-party contributions licensed under CLA
-Source code: <https://github.com/zensical/zrx>
+- SPDX-License-Identifier: MIT
+- Third-party contributions licensed under CLA
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to
