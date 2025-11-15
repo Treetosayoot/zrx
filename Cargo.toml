@@ -40,7 +40,6 @@ all = { level = "warn", priority = -1 }
 pedantic = { level = "warn", priority = -1 }
 
 [workspace.dependencies]
-zrx = { version = "0.0.3", path = "crates/zrx" }
 zrx-diagnostic = { version = "0.0.1", path = "crates/zrx-diagnostic" }
 zrx-event = { version = "0.0.1", path = "crates/zrx-event" }
 zrx-executor = { version = "0.0.1", path = "crates/zrx-executor" }

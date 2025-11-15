@@ -235,7 +235,7 @@ impl Selector {
 impl FromStr for Selector {
     type Err = Error;
 
-    /// Creates a selector from a string.
+    /// Attempts to create a selector from a string.
     ///
     /// The string must adhere to the following format and include exactly six
     /// `:` separators, even if some components are empty. All components are

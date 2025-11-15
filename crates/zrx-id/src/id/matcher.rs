@@ -253,7 +253,7 @@ impl Matcher {
 impl FromStr for Matcher {
     type Err = Error;
 
-    /// Creates a matcher from a string.
+    /// Attempts to create a matcher from a string.
     ///
     /// The string must adhere to the following format and include exactly six
     /// `:` separators, even if some components are empty. All components are
