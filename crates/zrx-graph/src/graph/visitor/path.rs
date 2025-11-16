@@ -26,6 +26,7 @@
 //! Visitor for paths between two nodes.
 
 use crate::graph::topology::Topology;
+use crate::graph::Graph;
 
 // ----------------------------------------------------------------------------
 // Structs
@@ -47,12 +48,41 @@ pub struct Paths<'a> {
 // Implementations
 // ----------------------------------------------------------------------------
 
-impl<'a> Paths<'a> {
-    /// Creates a visitor that yields all paths between the given nodes.
+impl<T> Graph<T> {
+    /// Creates an iterator over all paths between the given nodes.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use std::error::Error;
+    /// # fn main() -> Result<(), Box<dyn Error>> {
+    /// use zrx_graph::Graph;
+    ///
+    /// // Create graph builder and add nodes
+    /// let mut builder = Graph::builder();
+    /// let a = builder.add_node("a");
+    /// let b = builder.add_node("b");
+    /// let c = builder.add_node("c");
+    ///
+    /// // Create edges between nodes
+    /// builder.add_edge(a, b, 0)?;
+    /// builder.add_edge(b, c, 0)?;
+    ///
+    /// // Create graph from builder
+    /// let graph = builder.build();
+    ///
+    /// // Create iterator over paths
+    /// for path in graph.paths(a, c) {
+    ///     println!("{path:?}");
+    /// }
+    /// # Ok(())
+    /// # }
+    /// ```
+    #[inline]
     #[must_use]
-    pub fn new(topology: &'a Topology, source: usize, target: usize) -> Self {
-        Self {
-            topology,
+    pub fn paths(&self, source: usize, target: usize) -> Paths<'_> {
+        Paths {
+            topology: &self.topology,
             target,
             stack: Vec::from([(source, 0)]),
             path: Vec::from([source]),
@@ -74,7 +104,6 @@ impl Iterator for Paths<'_> {
     /// ```
     /// # use std::error::Error;
     /// # fn main() -> Result<(), Box<dyn Error>> {
-    /// use zrx_graph::visitor::Paths;
     /// use zrx_graph::Graph;
     ///
     /// // Create graph builder and add nodes
@@ -91,7 +120,7 @@ impl Iterator for Paths<'_> {
     /// let graph = builder.build();
     ///
     /// // Create iterator over paths
-    /// let mut paths = Paths::new(graph.topology(), a, c);
+    /// let mut paths = graph.paths(a, c);
     /// while let Some(path) = paths.next() {
     ///     println!("{path:?}");
     /// }

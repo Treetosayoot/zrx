@@ -39,7 +39,6 @@ pub use builder::Builder;
 pub use error::{Error, Result};
 use topology::Topology;
 use traversal::Traversal;
-use visitor::{Ancestors, Descendants, Paths};
 
 // ----------------------------------------------------------------------------
 // Structs
@@ -303,111 +302,6 @@ impl<T> Graph<T> {
     pub fn sinks(&self) -> impl Iterator<Item = usize> {
         let outgoing = self.topology.outgoing();
         outgoing.iter().filter(|&node| outgoing[node].is_empty())
-    }
-
-    /// Creates an iterator over the ancestors of the given node.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// # use std::error::Error;
-    /// # fn main() -> Result<(), Box<dyn Error>> {
-    /// use zrx_graph::Graph;
-    ///
-    /// // Create graph builder and add nodes
-    /// let mut builder = Graph::builder();
-    /// let a = builder.add_node("a");
-    /// let b = builder.add_node("b");
-    /// let c = builder.add_node("c");
-    ///
-    /// // Create edges between nodes
-    /// builder.add_edge(a, b, 0)?;
-    /// builder.add_edge(b, c, 0)?;
-    ///
-    /// // Create graph from builder
-    /// let graph = builder.build();
-    ///
-    /// // Create iterator over ancestors
-    /// for node in graph.ancestors(c) {
-    ///     println!("{node:?}");
-    /// }
-    /// # Ok(())
-    /// # }
-    /// ```
-    #[inline]
-    #[must_use]
-    pub fn ancestors(&self, node: usize) -> Ancestors<'_> {
-        Ancestors::new(&self.topology, node)
-    }
-
-    /// Creates an iterator over the descendants of the given node.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// # use std::error::Error;
-    /// # fn main() -> Result<(), Box<dyn Error>> {
-    /// use zrx_graph::Graph;
-    ///
-    /// // Create graph builder and add nodes
-    /// let mut builder = Graph::builder();
-    /// let a = builder.add_node("a");
-    /// let b = builder.add_node("b");
-    /// let c = builder.add_node("c");
-    ///
-    /// // Create edges between nodes
-    /// builder.add_edge(a, b, 0)?;
-    /// builder.add_edge(b, c, 0)?;
-    ///
-    /// // Create graph from builder
-    /// let graph = builder.build();
-    ///
-    /// // Create iterator over descendants
-    /// for node in graph.descendants(a) {
-    ///     println!("{node:?}");
-    /// }
-    /// # Ok(())
-    /// # }
-    /// ```
-    #[inline]
-    #[must_use]
-    pub fn descendants(&self, node: usize) -> Descendants<'_> {
-        Descendants::new(&self.topology, node)
-    }
-
-    /// Creates an iterator over all paths between the given nodes.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// # use std::error::Error;
-    /// # fn main() -> Result<(), Box<dyn Error>> {
-    /// use zrx_graph::Graph;
-    ///
-    /// // Create graph builder and add nodes
-    /// let mut builder = Graph::builder();
-    /// let a = builder.add_node("a");
-    /// let b = builder.add_node("b");
-    /// let c = builder.add_node("c");
-    ///
-    /// // Create edges between nodes
-    /// builder.add_edge(a, b, 0)?;
-    /// builder.add_edge(b, c, 0)?;
-    ///
-    /// // Create graph from builder
-    /// let graph = builder.build();
-    ///
-    /// // Create iterator over paths
-    /// for path in graph.paths(a, c) {
-    ///     println!("{path:?}");
-    /// }
-    /// # Ok(())
-    /// # }
-    /// ```
-    #[inline]
-    #[must_use]
-    pub fn paths(&self, source: usize, target: usize) -> Paths<'_> {
-        Paths::new(&self.topology, source, target)
     }
 
     /// Creates an iterator over the graph.
