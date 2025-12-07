@@ -735,7 +735,7 @@ impl<K, V> StoreRange<K, V> for BTreeMap<K, V>
 where
     K: Key,
 {
-    /// Returns a range iterator over the store.
+    /// Creates a range iterator over the store.
     ///
     /// # Examples
     ///

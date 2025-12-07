@@ -27,7 +27,6 @@
 
 use ahash::HashSet;
 
-use crate::graph::visitor::Ancestors;
 use crate::graph::Graph;
 
 use super::path::shortest_path_length;
@@ -70,8 +69,6 @@ pub fn lowest_common_ancestor<T, I>(graph: &Graph<T>, nodes: I) -> Option<usize>
 where
     I: IntoIterator<Item = usize>,
 {
-    let topology = graph.topology();
-
     // If there are fewer than two nodes, we return immediately
     let nodes = nodes.into_iter().collect::<Vec<_>>();
     if nodes.len() < 2 {
@@ -82,7 +79,7 @@ where
     // sets of ancestors, resulting in a set of all common ancestors
     let iter = nodes.iter();
     let ancestors = iter
-        .map(|&node| Ancestors::new(topology, node).collect::<HashSet<_>>())
+        .map(|&node| graph.ancestors(node).collect::<HashSet<_>>())
         .reduce(|a, b| a.intersection(&b).copied().collect())?;
 
     // Find the ancestor with the shortest path to any of the nodes, or return

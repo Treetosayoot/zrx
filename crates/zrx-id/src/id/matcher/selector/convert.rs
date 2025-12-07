@@ -100,8 +100,8 @@ where
     ///
     /// # Errors
     ///
-    /// This method returns [`Error::Path`][], if a component value contains a
-    /// backslash, or [`Error::Format`][], if the format is invalid.
+    /// This method returns [`Error::Path`][] if a component value contains a
+    /// backslash, or [`Error::Format`][] if the format is invalid.
     ///
     /// [`Error::Format`]: crate::id::Error::Format
     /// [`Error::Path`]: crate::id::Error::Path

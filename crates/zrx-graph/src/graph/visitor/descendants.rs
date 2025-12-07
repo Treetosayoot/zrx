@@ -23,18 +23,19 @@
 
 // ----------------------------------------------------------------------------
 
-//! Visitor for ancestors of a node.
+//! Visitor for descendants of a node.
 
 use ahash::HashSet;
 
 use crate::graph::topology::Topology;
+use crate::graph::Graph;
 
 // ----------------------------------------------------------------------------
 // Structs
 // ----------------------------------------------------------------------------
 
-/// Visitor for ancestors of a node.
-pub struct Ancestors<'a> {
+/// Visitor for descendants of a node.
+pub struct Descendants<'a> {
     /// Graph topology.
     topology: &'a Topology,
     /// Stack for depth-first search.
@@ -47,33 +48,14 @@ pub struct Ancestors<'a> {
 // Implementations
 // ----------------------------------------------------------------------------
 
-impl<'a> Ancestors<'a> {
-    /// Creates a visitor that yields all ancestors of the given node.
-    #[must_use]
-    pub fn new(topology: &'a Topology, node: usize) -> Self {
-        Self {
-            topology,
-            stack: Vec::from([node]),
-            visited: HashSet::default(),
-        }
-    }
-}
-
-// ----------------------------------------------------------------------------
-// Trait implementations
-// ----------------------------------------------------------------------------
-
-impl Iterator for Ancestors<'_> {
-    type Item = usize;
-
-    /// Returns the next ancestor.
+impl<T> Graph<T> {
+    /// Creates an iterator over the descendants of the given node.
     ///
     /// # Examples
     ///
     /// ```
     /// # use std::error::Error;
     /// # fn main() -> Result<(), Box<dyn Error>> {
-    /// use zrx_graph::visitor::Ancestors;
     /// use zrx_graph::Graph;
     ///
     /// // Create graph builder and add nodes
@@ -89,31 +71,78 @@ impl Iterator for Ancestors<'_> {
     /// // Create graph from builder
     /// let graph = builder.build();
     ///
-    /// // Create iterator over ancestors
-    /// let mut ancestors = Ancestors::new(graph.topology(), c);
-    /// while let Some(ancestor) = ancestors.next() {
-    ///     println!("{ancestor:?}");
+    /// // Create iterator over descendants
+    /// for node in graph.descendants(a) {
+    ///     println!("{node:?}");
+    /// }
+    /// # Ok(())
+    /// # }
+    /// ```
+    #[inline]
+    #[must_use]
+    pub fn descendants(&self, node: usize) -> Descendants<'_> {
+        Descendants {
+            topology: &self.topology,
+            stack: vec![node],
+            visited: HashSet::default(),
+        }
+    }
+}
+
+// ----------------------------------------------------------------------------
+// Trait implementations
+// ----------------------------------------------------------------------------
+
+impl Iterator for Descendants<'_> {
+    type Item = usize;
+
+    /// Returns the next descendant.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use std::error::Error;
+    /// # fn main() -> Result<(), Box<dyn Error>> {
+    /// use zrx_graph::Graph;
+    ///
+    /// // Create graph builder and add nodes
+    /// let mut builder = Graph::builder();
+    /// let a = builder.add_node("a");
+    /// let b = builder.add_node("b");
+    /// let c = builder.add_node("c");
+    ///
+    /// // Create edges between nodes
+    /// builder.add_edge(a, b, 0)?;
+    /// builder.add_edge(b, c, 0)?;
+    ///
+    /// // Create graph from builder
+    /// let graph = builder.build();
+    ///
+    /// // Create iterator over descendants
+    /// let mut descendants = graph.descendants(a);
+    /// while let Some(node) = descendants.next() {
+    ///     println!("{node:?}");
     /// }
     /// # Ok(())
     /// # }
     /// ```
     fn next(&mut self) -> Option<Self::Item> {
-        let incoming = self.topology.incoming();
+        let outgoing = self.topology.outgoing();
 
-        // Perform a depth-first search to find all ancestors, using a stack
+        // Perform a depth-first search to find all descendants, using a stack
         // over recursion, as it's faster and more efficient memory-wise
         while let Some(node) = self.stack.pop() {
-            for &ancestor in &incoming[node] {
-                // If we haven't visited this ancestor yet, we put it on the
+            for &descendant in &outgoing[node] {
+                // If we haven't visited this descendant yet, we put it on the
                 // stack after marking it as visited and return it immediately
-                if self.visited.insert(ancestor) {
-                    self.stack.push(ancestor);
-                    return Some(ancestor);
+                if self.visited.insert(descendant) {
+                    self.stack.push(descendant);
+                    return Some(descendant);
                 }
             }
         }
 
-        // No more ancestors to visit
+        // No more descendants to visit
         None
     }
 }

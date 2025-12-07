@@ -157,7 +157,7 @@ impl Builder {
         self.location.add(parse(selector.location().as_deref())?);
         self.fragment.add(parse(selector.fragment().as_deref())?);
 
-        // Return matcher for chaining
+        // Return builder for chaining
         Ok(self)
     }
 

@@ -25,10 +25,10 @@
 
 //! Visitors.
 
-mod ancestor;
-mod descendant;
-mod path;
+mod ancestors;
+mod descendants;
+mod paths;
 
-pub use ancestor::Ancestors;
-pub use descendant::Descendants;
-pub use path::Paths;
+pub use ancestors::Ancestors;
+pub use descendants::Descendants;
+pub use paths::Paths;

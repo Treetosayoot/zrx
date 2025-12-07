@@ -129,7 +129,7 @@ where
     ///
     /// # Errors
     ///
-    /// Returns [`Error::Type`] if the type is unknown.
+    /// Returns [`Error::Type`][] if the type is unknown.
     ///
     /// [`Error::Type`]: crate::scheduler::session::Error::Type
     #[inline]
