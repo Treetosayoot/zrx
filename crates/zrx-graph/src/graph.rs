@@ -364,6 +364,20 @@ impl<T> Graph<T> {
     pub fn is_empty(&self) -> bool {
         self.data.is_empty()
     }
+
+    /// Returns whether the given node is a source.
+    #[inline]
+    pub fn is_source(&self, node: usize) -> bool {
+        let incoming = self.topology.incoming();
+        incoming[node].is_empty()
+    }
+
+    /// Returns whether the given node is a sink.
+    #[inline]
+    pub fn is_sink(&self, node: usize) -> bool {
+        let outgoing = self.topology.outgoing();
+        outgoing[node].is_empty()
+    }
 }
 
 // ----------------------------------------------------------------------------
