@@ -170,7 +170,7 @@ where
         }
     }
 
-    /// Returns a range iterator over the store.
+    /// Creates a range iterator over the store.
     ///
     /// This method is not implemented as part of [`StoreRange`][], because it
     /// deviates from the trait, as it uses numeric indices instead of keys.

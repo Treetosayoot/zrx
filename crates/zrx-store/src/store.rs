@@ -341,7 +341,7 @@ pub trait StoreRange<K, V>: Store<K, V>
 where
     K: Key,
 {
-    /// Returns a range iterator over the store.
+    /// Creates a range iterator over the store.
     fn range<'a, R>(&'a self, range: R) -> impl Iterator<Item = (&'a K, &'a V)>
     where
         R: RangeBounds<K>,
