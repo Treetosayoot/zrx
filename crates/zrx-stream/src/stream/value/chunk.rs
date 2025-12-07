@@ -26,6 +26,7 @@
 //! Chunk of items.
 
 use std::slice::Iter;
+use std::vec::IntoIter;
 use zrx_scheduler::effect::Item;
 use zrx_scheduler::{Id, Value};
 
@@ -169,7 +170,7 @@ where
 
 impl<I, T> IntoIterator for Chunk<I, T> {
     type Item = Item<I, T>;
-    type IntoIter = std::vec::IntoIter<Self::Item>;
+    type IntoIter = IntoIter<Self::Item>;
 
     /// Creates an iterator over the chunk of items.
     ///
