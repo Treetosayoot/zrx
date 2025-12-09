@@ -306,7 +306,7 @@ impl<T> Graph<T> {
 
     /// Creates an iterator over the graph.
     ///
-    /// This iterator yields the data `T` associated with each node. If you need
+    /// This iterator emits the data `T` associated with each node. If you need
     /// to iterate over the node indices of a graph, use [`Graph::topology`] to
     /// obtain the [`Topology::incoming`] or [`Topology::outgoing`] adjacency
     /// list, and iterate over those.
@@ -476,7 +476,7 @@ impl<'a, T> IntoIterator for &'a Graph<T> {
 
     /// Creates an iterator over the graph.
     ///
-    /// This iterator yields the data `T` associated with each node. If you need
+    /// This iterator emits the data `T` associated with each node. If you need
     /// to iterate over the node indices of a graph, use [`Graph::topology`] to
     /// obtain the [`Topology::incoming`] or [`Topology::outgoing`] adjacency
     /// list, and iterate over those.

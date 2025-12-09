@@ -131,7 +131,7 @@ impl Iterator for Paths<'_> {
         let outgoing = self.topology.outgoing();
 
         // Perform a depth-first search to find all paths from the source to
-        // the target, and yield them in the order of discovery
+        // the target, and emit them in the order of discovery
         while let Some((node, depth)) = self.stack.pop() {
             // Backtrack by truncating the current path to the depth of the
             // current node, and then add the current node to the path
