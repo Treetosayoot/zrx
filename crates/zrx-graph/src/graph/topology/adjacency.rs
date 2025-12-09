@@ -203,7 +203,7 @@ impl Adjacency {
 
     /// Creates an iterator over the adjacency list.
     ///
-    /// This iterator yields the node indices, which is exactly the same as
+    /// This iterator emits the node indices, which is exactly the same as
     /// iterating over the adjacency list using `0..self.len()`.
     ///
     /// # Examples
@@ -313,7 +313,7 @@ impl IntoIterator for &Adjacency {
 
     /// Creates an iterator over the adjacency list.
     ///
-    /// This iterator yields the node indices, which is exactly the same as
+    /// This iterator emits the node indices, which is exactly the same as
     /// iterating over the adjacency list using `0..self.len()`.
     ///
     /// # Examples
