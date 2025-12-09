@@ -117,14 +117,12 @@ impl Traversal {
         // incoming edges for that node.
         let mut dependencies = incoming.degrees().to_vec();
         for node in incoming {
-            // We must adjust the dependency count of each node's dependents
-            // if it's not reachable from any of the initial nodes
-            if !visitable.iter().any(|&n| distance[n][node] != u8::MAX) {
-                // Obtain adjacency list of outgoing edges, and decrement the
-                // number of unresolved dependencies for each dependent by one
-                let outgoing = topology.outgoing();
-                for &dependent in &outgoing[node] {
-                    dependencies[dependent] -= 1;
+            // We must adjust the dependency count for each node for all of its
+            // dependencies that are not reachable from the initial nodes
+            for &dependency in &incoming[node] {
+                let mut iter = visitable.iter();
+                if !iter.any(|&n| distance[n][dependency] != u8::MAX) {
+                    dependencies[node] -= 1;
                 }
             }
         }
