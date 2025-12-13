@@ -26,14 +26,14 @@
 //! Coalesce operator.
 
 use std::marker::PhantomData;
+use zrx_scheduler::action::Descriptor;
 use zrx_scheduler::action::descriptor::Property;
 use zrx_scheduler::action::output::IntoOutputs;
-use zrx_scheduler::action::Descriptor;
 use zrx_scheduler::effect::Item;
 use zrx_scheduler::{Id, Value};
 
-use crate::stream::combinator::{IntoStreamSet, StreamSet};
 use crate::stream::Stream;
+use crate::stream::combinator::{IntoStreamSet, StreamSet};
 
 use super::Operator;
 
@@ -107,7 +107,7 @@ where
         tracing::instrument(level = "debug", skip_all, fields(id = %item.id))
     )]
     fn handle(&mut self, item: Self::Item<'_>) -> impl IntoOutputs<I> {
-        item.map(|data| data.into_iter().find_map(|option| option))
+        item.map(|data| data.into_iter().find_map(|opt| opt))
             .into_owned()
     }
 

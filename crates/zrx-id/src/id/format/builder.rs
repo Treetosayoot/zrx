@@ -28,10 +28,10 @@
 use std::array;
 use std::borrow::Cow;
 
+use super::Format;
 use super::encoding::encode;
 use super::error::{Error, Result};
 use super::path::validate;
-use super::Format;
 
 // ----------------------------------------------------------------------------
 // Structs
@@ -168,7 +168,7 @@ impl<'a, const N: usize> Builder<'a, N> {
 
         // Write all components to the buffer, interspersed with `:` separators,
         // and percent-encode each component if it contains `:` characters
-        for (index, option) in self.values.into_iter().enumerate() {
+        for (index, opt) in self.values.into_iter().enumerate() {
             if index > 0 {
                 buffer.push(b':');
             }
@@ -182,7 +182,7 @@ impl<'a, const N: usize> Builder<'a, N> {
             // string source, we can just copy the component from there, since
             // we can be sure that the encoding is already correct, if any, and
             // can thus skip encoding and validation
-            if let (None, Some(format)) = (option.as_ref(), self.source) {
+            if let (None, Some(format)) = (opt.as_ref(), self.source) {
                 let p = format.spans[index].start as usize;
                 let q = format.spans[index].end as usize;
 
@@ -201,7 +201,7 @@ impl<'a, const N: usize> Builder<'a, N> {
 
             // If no value is set for this component, we append a colon and set
             // the span to an empty range at the current position
-            let Some(value) = option else {
+            let Some(value) = opt else {
                 spans[index] = start..start;
                 continue;
             };

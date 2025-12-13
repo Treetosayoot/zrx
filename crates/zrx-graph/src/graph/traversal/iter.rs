@@ -33,10 +33,10 @@ use super::Traversal;
 
 /// Iterator over a topological traversal.
 ///
-/// This iterator consumes a [`Traversal`], yielding nodes in topological order.
+/// This iterator consumes a [`Traversal`], emitting nodes in topological order.
 /// It offers a simplified API for synchronous iteration if nodes don't need to
 /// be deliberately completed, but can be considered done once the iterator
-/// has yielded them.
+/// has emitted them.
 #[derive(Debug)]
 pub struct IntoIter {
     /// Traversal.
@@ -59,6 +59,7 @@ impl Iterator for IntoIter {
     }
 
     /// Returns the bounds of the traversal.
+    #[inline]
     fn size_hint(&self) -> (usize, Option<usize>) {
         (self.traversal.len(), None)
     }
@@ -73,7 +74,7 @@ impl IntoIterator for Traversal {
     /// Creates an iterator over a topological traversal.
     ///
     /// This consumes the traversal and produces an iterator that automatically
-    /// completes each node after yielding it, allowing for convenient use in
+    /// completes each node after emitting it, allowing for convenient use in
     /// for loops and iterator chains.
     ///
     /// # Examples
