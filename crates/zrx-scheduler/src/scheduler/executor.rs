@@ -183,7 +183,7 @@ where
         // process and process them all, done. Later, we should classify nodes
         // by their type, i.e., whether they are tasks, timers, or just run on
         // the main thread, so we can prioritize them accordingly.
-        let mut option = None;
+        let mut opt = None;
         let mut max = 8;
         for (n, queue) in self.queues.iter_mut().enumerate() {
             let value = self.graph[n]
@@ -199,14 +199,14 @@ where
                 })
                 .unwrap_or(8);
             if !queue.is_empty() && self.concurrency[n] < value {
-                option = Some(n);
+                opt = Some(n);
                 max = value;
                 break;
             }
         }
 
         // No action could be processed
-        let Some(n) = option else { return Vec::new() };
+        let Some(n) = opt else { return Vec::new() };
 
         // Process jobs for the selected action
         let mut results = Vec::new();

@@ -47,7 +47,7 @@ pub trait TryFromValue<'a>: Sized + 'a {
     /// is intended to be used in a low-level context, orchestrating the flow
     /// of values between actions, the errors just carry enough information so
     /// the reason of the failure can be determined during development.
-    fn try_from_value(value: Option<&'a dyn Value>) -> Result<Self>;
+    fn try_from_value(opt: Option<&'a dyn Value>) -> Result<Self>;
 }
 
 // ----------------------------------------------------------------------------
@@ -132,15 +132,15 @@ where
     /// use zrx_scheduler::value::{TryFromValue, Value};
     ///
     /// // Create and convert optional value
-    /// let option = Some(&42 as &dyn Value);
-    /// let target = <&i32>::try_from_value(option)?;
+    /// let opt = Some(&42 as &dyn Value);
+    /// let target = <&i32>::try_from_value(opt)?;
     /// assert_eq!(target, &42);
     /// # Ok(())
     /// # }
     /// ```
     #[inline]
-    fn try_from_value(option: Option<&'a dyn Value>) -> Result<Self> {
-        option.map_or(Err(Error::Presence), |value| {
+    fn try_from_value(opt: Option<&'a dyn Value>) -> Result<Self> {
+        opt.map_or(Err(Error::Presence), |value| {
             value.downcast_ref::<T>().ok_or(Error::Downcast)
         })
     }
@@ -166,15 +166,15 @@ where
     /// use zrx_scheduler::value::{TryFromValue, Value};
     ///
     /// // Create and convert optional value
-    /// let option = Some(&42 as &dyn Value);
-    /// let target = <Option<&i32>>::try_from_value(option)?;
+    /// let opt = Some(&42 as &dyn Value);
+    /// let target = <Option<&i32>>::try_from_value(opt)?;
     /// assert_eq!(target, Some(&42));
     /// # Ok(())
     /// # }
     /// ```
     #[inline]
-    fn try_from_value(option: Option<&'a dyn Value>) -> Result<Self> {
-        option.map_or(Ok(None), |value| {
+    fn try_from_value(opt: Option<&'a dyn Value>) -> Result<Self> {
+        opt.map_or(Ok(None), |value| {
             value.downcast_ref::<T>().ok_or(Error::Downcast).map(Some)
         })
     }
@@ -237,8 +237,8 @@ where
         let mut iter = values.into_iter();
 
         // Ensure that the iterator yields exactly one value
-        if let (Some(option), None) = (iter.next(), iter.next()) {
-            T::try_from_value(option)
+        if let (Some(opt), None) = (iter.next(), iter.next()) {
+            T::try_from_value(opt)
         } else {
             Err(Error::Mismatch)
         }

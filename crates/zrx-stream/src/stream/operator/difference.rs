@@ -110,7 +110,7 @@ where
         let item = item.map(|data| {
             let mut iter = data.into_iter();
             iter.next()?.and_then(|head| {
-                iter.all(|option| option != Some(head)).then_some(head)
+                iter.all(|opt| opt != Some(head)).then_some(head)
             })
         });
 

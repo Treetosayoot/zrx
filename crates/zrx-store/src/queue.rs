@@ -237,13 +237,13 @@ where
         // Obtain the current instant once to select due items during iteration,
         // or tight loops might experience slowdowns of up to a factor of 6
         let deadline = Instant::now();
-        let option = self.store.iter().next().and_then(|(key, item)| {
+        let opt = self.store.iter().next().and_then(|(key, item)| {
             (item.deadline() <= deadline).then(|| key.clone())
         });
 
         // Remove and return the first item we found, which is the next item
         // in current queue order that can be considered to be due
-        option.map(|key| {
+        opt.map(|key| {
             // We can safely use expect here, since we're iterating over a
             // store that is synchronized with the ordering
             self.remove(&key)
