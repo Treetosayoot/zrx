@@ -26,14 +26,14 @@
 //! Difference operator.
 
 use std::marker::PhantomData;
-use zrx_scheduler::action::Descriptor;
 use zrx_scheduler::action::descriptor::Property;
 use zrx_scheduler::action::output::IntoOutputs;
+use zrx_scheduler::action::Descriptor;
 use zrx_scheduler::effect::Item;
 use zrx_scheduler::{Id, Value};
 
-use crate::stream::Stream;
 use crate::stream::combinator::{IntoStreamSet, StreamSet};
+use crate::stream::Stream;
 
 use super::Operator;
 

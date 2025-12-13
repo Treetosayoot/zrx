@@ -25,8 +25,8 @@
 
 //! Value conversions.
 
-use super::Value;
 use super::error::{Error, Result};
+use super::Value;
 
 // ----------------------------------------------------------------------------
 // Traits

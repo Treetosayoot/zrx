@@ -28,10 +28,10 @@
 use std::array;
 use std::borrow::Cow;
 
-use super::Format;
 use super::encoding::encode;
 use super::error::{Error, Result};
 use super::path::validate;
+use super::Format;
 
 // ----------------------------------------------------------------------------
 // Structs
