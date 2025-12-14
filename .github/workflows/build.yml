@@ -24,37 +24,71 @@
 name: Build
 
 on:
-  pull_request:
   push:
     branches:
       - master
+  pull_request:
+    branches:
+      - master
+  workflow_call:
+    inputs:
+      ref:
+        required: true
+        type: string
+
+permissions:
+  attestations: write # Required for attestations
+  id-token: write     # Required for OIDC
 
 jobs:
-  tests:
-    name: Test (${{ matrix.os.name }}, ${{ matrix.rust }})
-    runs-on: ${{ matrix.os.id }}
+  build:
+    name: Library (${{ matrix.name }})
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        rust: [stable, 1.86.0]
-        os:
-          - id: ubuntu-latest
-            name: Linux
-          - id: windows-latest
-            name: Windows
-          - id: macos-latest
-            name: macOS
+        include:
+          - name: Linux, x86_64
+            os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+          - name: Linux, x86
+            os: ubuntu-latest
+            target: i686-unknown-linux-gnu
+          - name: Linux, aarch64
+            os: ubuntu-latest
+            target: aarch64-unknown-linux-gnu
+          - name: Linux, armv7
+            os: ubuntu-latest
+            target: armv7-unknown-linux-gnueabihf
+          - name: Windows, x64
+            os: windows-latest
+            target: x86_64-pc-windows-msvc
+            suffix: .exe
+          - name: Windows, x86
+            os: windows-latest
+            target: i686-pc-windows-msvc
+            suffix: .exe
+          - name: macOS, x86_64
+            os: macos-latest
+            target: x86_64-apple-darwin
+          - name: macOS, aarch64
+            os: macos-latest
+            target: aarch64-apple-darwin
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.ref || github.sha }}
 
       - name: Set up Rust
-        uses: dtolnay/rust-toolchain@master
+        uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: ${{ matrix.rust }}
+          targets: ${{ matrix.target }}
 
       - name: Set up Rust cache
         uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.target }}
 
       - name: Run tests
         run: cargo test

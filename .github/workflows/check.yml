@@ -24,18 +24,22 @@
 name: Check
 
 on:
-  pull_request:
   push:
+    branches:
+      - master
+  pull_request:
     branches:
       - master
 
 jobs:
-  checks:
-    name: Lint and format
+  clippy:
+    name: Clippy
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
+        with:
+          ref: ${{ github.sha }}
 
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@master
@@ -45,15 +49,31 @@ jobs:
       - name: Run clippy
         run: cargo clippy
 
-      - name: Run rustfmt
-        run: find crates -name "*.rs" -exec rustfmt --check {} \;
-
-  security:
-    name: Security audit
+  format:
+    name: Format
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
+        with:
+          ref: ${{ github.sha }}
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: stable
+
+      - name: Run rustfmt
+        run: find crates -name "*.rs" -exec rustfmt --check {} \;
+
+  security:
+    name: Audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.sha }}
 
       - name: Set up Rust cache
         uses: Swatinem/rust-cache@v2
