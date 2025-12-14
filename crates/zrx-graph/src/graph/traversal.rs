@@ -107,9 +107,6 @@ impl Traversal {
     where
         I: IntoIterator<Item = usize>,
     {
-        let visitable = initial.into_iter().collect::<VecDeque<_>>();
-
-        // Obtain incoming edges and distance matrix
         let incoming = topology.incoming();
         let distance = topology.distance();
 
@@ -117,6 +114,7 @@ impl Traversal {
         // its dependencies have been visited. This means that we need to track
         // the number of dependencies for each node, which is the number of
         // incoming edges for that node.
+        let mut visitable = VecDeque::from_iter(initial);
         let mut dependencies = incoming.degrees().to_vec();
         for node in incoming {
             // We must adjust the dependency count for each node for all of its
@@ -129,7 +127,9 @@ impl Traversal {
             }
         }
 
-        // Return traversal
+        // Retain only the visitable nodes whose dependencies are satisfied,
+        // as we will discover the other initial nodes during traversal
+        visitable.retain(|&node| dependencies[node] == 0);
         Self {
             topology: topology.clone(),
             dependencies,
