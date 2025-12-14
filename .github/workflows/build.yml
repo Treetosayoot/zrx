@@ -42,7 +42,7 @@ permissions:
 
 jobs:
   build:
-    name: Executable (${{ matrix.name }})
+    name: Library (${{ matrix.name }})
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
