@@ -91,4 +91,4 @@ jobs:
           key: ${{ matrix.target }}
 
       - name: Run tests
-        run:  cargo test
+        run: cargo test
