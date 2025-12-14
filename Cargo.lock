@@ -350,7 +350,7 @@ dependencies = [
 
 [[package]]
 name = "zrx"
-version = "0.0.3"
+version = "0.0.4"
 dependencies = [
  "zrx-diagnostic",
  "zrx-executor",
@@ -376,7 +376,7 @@ dependencies = [
 
 [[package]]
 name = "zrx-graph"
-version = "0.0.1"
+version = "0.0.2"
 dependencies = [
  "ahash",
  "thiserror",
@@ -398,7 +398,7 @@ version = "0.0.1"
 
 [[package]]
 name = "zrx-scheduler"
-version = "0.0.1"
+version = "0.0.2"
 dependencies = [
  "ahash",
  "crossbeam",
