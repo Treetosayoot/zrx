@@ -90,5 +90,5 @@ jobs:
         with:
           key: ${{ matrix.target }}
 
-      - name: Build library
-        run: cargo build --release --locked
+      - name: Run tests
+        run:  cargo test
