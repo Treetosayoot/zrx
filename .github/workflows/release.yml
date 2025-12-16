@@ -87,14 +87,14 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
 
-      - name: Set up ctrl-z
-        uses: squidfunk/ctrl-z@v0
+      - name: Set up mono
+        uses: zensical/mono@v0
 
       - name: Create release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          ctrl-z version changelog -s $VERSION > notes.txt
+          mono version changelog -s $VERSION > notes.txt
           gh release create $VERSION \
             --title ${VERSION#v} \
             --notes-file notes.txt
@@ -115,12 +115,12 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
 
-      - name: Set up ctrl-z
-        uses: squidfunk/ctrl-z@v0
+      - name: Set up mono
+        uses: zensical/mono@v0
 
       - name: Publish to crates.io
         run: |
-          ctrl-z version changed $VERSION | while read -r package; do
+          mono version changed $VERSION | while read -r package; do
             cargo publish --package $package --no-verify --locked
           done
         env:
