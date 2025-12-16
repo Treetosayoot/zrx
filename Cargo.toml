@@ -33,7 +33,6 @@ documentation = "https://github.com/zensical/zrx"
 repository = "https://github.com/zensical/zrx"
 authors = ["Zensical <contributors@zensical.org>"]
 license = "MIT"
-readme = "README.md"
 
 [workspace.lints.clippy]
 all = { level = "warn", priority = -1 }
