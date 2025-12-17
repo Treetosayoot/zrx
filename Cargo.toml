@@ -47,7 +47,7 @@ zrx-id = { version = "0.0.3", path = "crates/zrx-id" }
 zrx-path = { version = "0.0.1", path = "crates/zrx-path" }
 zrx-scheduler = { version = "0.0.2", path = "crates/zrx-scheduler" }
 zrx-store = { version = "0.0.1", path = "crates/zrx-store" }
-zrx-stream = { version = "0.0.1", path = "crates/zrx-stream" }
+zrx-stream = { version = "0.0.2", path = "crates/zrx-stream" }
 
 ahash = "0.8.12"
 crossbeam = "0.8.4"
