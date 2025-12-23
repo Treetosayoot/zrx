@@ -23,7 +23,7 @@
 
 // ----------------------------------------------------------------------------
 
-//! Visitors.
+//! Graph visitors.
 
 mod ancestors;
 mod descendants;
