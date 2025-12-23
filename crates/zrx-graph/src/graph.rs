@@ -31,6 +31,7 @@ use std::slice::Iter;
 pub mod algorithm;
 mod builder;
 mod error;
+pub mod operator;
 pub mod topology;
 pub mod traversal;
 pub mod visitor;
@@ -143,42 +144,6 @@ impl<T> Graph<T> {
     #[must_use]
     pub fn empty() -> Self {
         Builder::<T>::new().build()
-    }
-
-    /// Maps the nodes to a different type.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// # use std::error::Error;
-    /// # fn main() -> Result<(), Box<dyn Error>> {
-    /// use zrx_graph::Graph;
-    ///
-    /// // Create graph builder and add nodes
-    /// let mut builder = Graph::builder();
-    /// let a = builder.add_node("a");
-    /// let b = builder.add_node("b");
-    /// let c = builder.add_node("c");
-    ///
-    /// // Create edges between nodes
-    /// builder.add_edge(a, b, 0)?;
-    /// builder.add_edge(b, c, 0)?;
-    ///
-    /// // Create graph from builder and map data
-    /// let graph = builder.build();
-    /// graph.map(str::to_uppercase);
-    /// # Ok(())
-    /// # }
-    /// ```
-    #[inline]
-    pub fn map<F, U>(self, f: F) -> Graph<U>
-    where
-        F: FnMut(T) -> U,
-    {
-        Graph {
-            data: self.data.into_iter().map(f).collect(),
-            topology: self.topology,
-        }
     }
 
     /// Creates a topogical traversal starting from the given initial nodes.
