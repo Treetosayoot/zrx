@@ -129,10 +129,10 @@ impl Iterator for Ancestors<'_> {
     fn next(&mut self) -> Option<Self::Item> {
         let incoming = self.topology.incoming();
 
-        // Perform a depth-first search to find all ancestors, using a stack
-        // over recursion, as it's faster and more efficient memory-wise
+        // Perform a depth-first search to find all ancestors of a node, by
+        // exploring them iteratively, not including the node itself
         while let Some(node) = self.stack.pop() {
-            for &ancestor in &incoming[node] {
+            for &ancestor in incoming[node].iter().rev() {
                 // If we haven't visited this ancestor yet, we put it on the
                 // stack after marking it as visited and return it immediately
                 if self.visited.insert(ancestor) {
