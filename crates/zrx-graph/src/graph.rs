@@ -28,7 +28,6 @@
 use std::ops::{Index, IndexMut};
 use std::slice::Iter;
 
-pub mod algorithm;
 mod builder;
 mod error;
 pub mod operator;
