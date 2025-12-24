@@ -181,7 +181,36 @@ mod tests {
                 "g" => "i",
                 "h" => "i",
             };
+            for (node, descendants) in [
+                (0, vec![1, 3, 6, 8, 4, 7, 2, 5]),
+                (1, vec![3, 6, 8, 4, 7]),
+                (2, vec![5, 7, 8]),
+                (3, vec![6, 8]),
+                (4, vec![6, 8, 7]),
+                (5, vec![7, 8]),
+                (6, vec![8]),
+                (7, vec![8]),
+                (8, vec![]),
+            ] {
+                assert_eq!(
+                    graph.descendants(node).collect::<Vec<_>>(),
+                    descendants
+                );
+            }
+        }
 
+        #[test]
+        fn handles_multi_graph() {
+            let graph = graph! {
+                "a" => "b", "a" => "c", "a" => "c",
+                "b" => "d", "b" => "e",
+                "c" => "f",
+                "d" => "g",
+                "e" => "g", "e" => "h",
+                "f" => "h",
+                "g" => "i",
+                "h" => "i",
+            };
             for (node, descendants) in [
                 (0, vec![1, 3, 6, 8, 4, 7, 2, 5]),
                 (1, vec![3, 6, 8, 4, 7]),
