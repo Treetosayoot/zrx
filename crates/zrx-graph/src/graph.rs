@@ -32,6 +32,7 @@ mod builder;
 mod error;
 mod macros;
 pub mod operator;
+mod property;
 pub mod topology;
 pub mod traversal;
 pub mod visitor;
@@ -328,28 +329,6 @@ impl<T> Graph<T> {
     #[inline]
     pub fn is_empty(&self) -> bool {
         self.data.is_empty()
-    }
-
-    /// Returns whether the given node is a source.
-    ///
-    /// # Panics
-    ///
-    /// Panics if the node does not exist.
-    #[inline]
-    pub fn is_source(&self, node: usize) -> bool {
-        let incoming = self.topology.incoming();
-        incoming[node].is_empty()
-    }
-
-    /// Returns whether the given node is a sink.
-    ///
-    /// # Panics
-    ///
-    /// Panics if the node does not exist.
-    #[inline]
-    pub fn is_sink(&self, node: usize) -> bool {
-        let outgoing = self.topology.outgoing();
-        outgoing[node].is_empty()
     }
 }
 
