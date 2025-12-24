@@ -30,6 +30,7 @@ use std::slice::Iter;
 
 mod builder;
 mod error;
+mod macros;
 pub mod operator;
 pub mod topology;
 pub mod traversal;
