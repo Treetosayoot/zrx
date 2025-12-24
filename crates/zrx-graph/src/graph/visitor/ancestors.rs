@@ -81,11 +81,16 @@ impl<T> Graph<T> {
     #[inline]
     #[must_use]
     pub fn ancestors(&self, node: usize) -> Ancestors<'_> {
-        Ancestors {
+        let mut iter = Ancestors {
             topology: &self.topology,
             stack: Vec::from([node]),
             visited: HashSet::default(),
-        }
+        };
+
+        // Skip the initial node itself - it's simpler to just skip the initial
+        // node, so we can keep the iterator implementation plain and simple
+        iter.next();
+        iter
     }
 }
 
@@ -131,18 +136,59 @@ impl Iterator for Ancestors<'_> {
 
         // Perform a depth-first search to find all ancestors of a node, by
         // exploring them iteratively, not including the node itself
-        while let Some(node) = self.stack.pop() {
-            for &ancestor in incoming[node].iter().rev() {
-                // If we haven't visited this ancestor yet, we put it on the
-                // stack after marking it as visited and return it immediately
-                if self.visited.insert(ancestor) {
-                    self.stack.push(ancestor);
-                    return Some(ancestor);
-                }
+        let node = self.stack.pop()?;
+        for &ancestor in incoming[node].iter().rev() {
+            // If we haven't visited this ancestor yet, we put it on the
+            // stack after marking it as visited and return it immediately
+            if self.visited.insert(ancestor) {
+                self.stack.push(ancestor);
             }
         }
 
-        // No more ancestors to visit
-        None
+        // Return the next ancestor
+        Some(node)
+    }
+}
+
+// ----------------------------------------------------------------------------
+// Tests
+// ----------------------------------------------------------------------------
+
+#[cfg(test)]
+mod tests {
+
+    mod ancestors {
+        use crate::graph;
+
+        #[test]
+        fn handles_ancestors() {
+            let graph = graph! {
+                "a" => "b", "a" => "c",
+                "b" => "d", "b" => "e",
+                "c" => "f",
+                "d" => "g",
+                "e" => "g", "e" => "h",
+                "f" => "h",
+                "g" => "i",
+                "h" => "i",
+            };
+
+            for (node, ancestors) in [
+                (0, vec![]),
+                (1, vec![0]),
+                (2, vec![0]),
+                (3, vec![1, 0]),
+                (4, vec![1, 0]),
+                (5, vec![2, 0]),
+                (6, vec![3, 1, 0, 4]),
+                (7, vec![4, 1, 0, 5, 2]),
+                (8, vec![6, 3, 1, 0, 4, 7, 5, 2]),
+            ] {
+                assert_eq!(
+                    graph.ancestors(node).collect::<Vec<_>>(),
+                    ancestors
+                );
+            }
+        }
     }
 }
