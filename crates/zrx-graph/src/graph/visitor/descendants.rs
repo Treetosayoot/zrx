@@ -51,6 +51,15 @@ pub struct Descendants<'a> {
 impl<T> Graph<T> {
     /// Creates an iterator over the descendants of the given node.
     ///
+    /// # Panics
+    ///
+    /// Panics if the node does not exist, as this indicates that there's a bug
+    /// in the code that creates or uses the iterator. While the [`Builder`][]
+    /// is designed to be fallible to ensure the structure is valid, methods
+    /// that operate on [`Graph`][] panic on violated invariants.
+    ///
+    /// [`Builder`]: crate::graph::Builder
+    ///
     /// # Examples
     ///
     /// ```
@@ -161,7 +170,7 @@ mod tests {
         use crate::graph;
 
         #[test]
-        fn handles_descendants() {
+        fn handles_graph() {
             let graph = graph! {
                 "a" => "b", "a" => "c",
                 "b" => "d", "b" => "e",

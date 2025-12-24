@@ -331,6 +331,10 @@ impl<T> Graph<T> {
     }
 
     /// Returns whether the given node is a source.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the node does not exist.
     #[inline]
     pub fn is_source(&self, node: usize) -> bool {
         let incoming = self.topology.incoming();
@@ -338,6 +342,10 @@ impl<T> Graph<T> {
     }
 
     /// Returns whether the given node is a sink.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the node does not exist.
     #[inline]
     pub fn is_sink(&self, node: usize) -> bool {
         let outgoing = self.topology.outgoing();
