@@ -81,11 +81,16 @@ impl<T> Graph<T> {
     #[inline]
     #[must_use]
     pub fn descendants(&self, node: usize) -> Descendants<'_> {
-        Descendants {
+        let mut iter = Descendants {
             topology: &self.topology,
-            stack: vec![node],
+            stack: Vec::from([node]),
             visited: HashSet::default(),
-        }
+        };
+
+        // Skip the initial node itself - it's simpler to just skip the initial
+        // node, so we can keep the iterator implementation plain and simple
+        iter.next();
+        iter
     }
 }
 
@@ -131,18 +136,59 @@ impl Iterator for Descendants<'_> {
 
         // Perform a depth-first search to find all descendants of a node, by
         // exploring them iteratively, not including the node itself
-        while let Some(node) = self.stack.pop() {
-            for &descendant in outgoing[node].iter().rev() {
-                // If we haven't visited this descendant yet, we put it on the
-                // stack after marking it as visited and return it immediately
-                if self.visited.insert(descendant) {
-                    self.stack.push(descendant);
-                    return Some(descendant);
-                }
+        let node = self.stack.pop()?;
+        for &descendant in outgoing[node].iter().rev() {
+            // If we haven't visited this descendant yet, we put it on the
+            // stack after marking it as visited and return it immediately
+            if self.visited.insert(descendant) {
+                self.stack.push(descendant);
             }
         }
 
-        // No more descendants to visit
-        None
+        // Return the next descendant
+        Some(node)
+    }
+}
+
+// ----------------------------------------------------------------------------
+// Tests
+// ----------------------------------------------------------------------------
+
+#[cfg(test)]
+mod tests {
+
+    mod descendants {
+        use crate::graph;
+
+        #[test]
+        fn handles_descendants() {
+            let graph = graph! {
+                "a" => "b", "a" => "c",
+                "b" => "d", "b" => "e",
+                "c" => "f",
+                "d" => "g",
+                "e" => "g", "e" => "h",
+                "f" => "h",
+                "g" => "i",
+                "h" => "i",
+            };
+
+            for (node, descendants) in [
+                (0, vec![1, 3, 6, 8, 4, 7, 2, 5]),
+                (1, vec![3, 6, 8, 4, 7]),
+                (2, vec![5, 7, 8]),
+                (3, vec![6, 8]),
+                (4, vec![6, 8, 7]),
+                (5, vec![7, 8]),
+                (6, vec![8]),
+                (7, vec![8]),
+                (8, vec![]),
+            ] {
+                assert_eq!(
+                    graph.descendants(node).collect::<Vec<_>>(),
+                    descendants
+                );
+            }
+        }
     }
 }
