@@ -28,9 +28,11 @@
 mod ancestors;
 mod descendants;
 mod filter_sinks;
+mod filter_sources;
 mod paths;
 
 pub use ancestors::Ancestors;
 pub use descendants::Descendants;
 pub use filter_sinks::FilterSinks;
+pub use filter_sources::FilterSources;
 pub use paths::Paths;
