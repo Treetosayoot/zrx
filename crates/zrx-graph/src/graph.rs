@@ -25,7 +25,7 @@
 
 //! Graph.
 
-use std::ops::{Index, IndexMut};
+use std::ops::{Index, IndexMut, Range};
 use std::slice::Iter;
 
 mod builder;
@@ -298,16 +298,17 @@ impl<T> Graph<T> {
     /// // Create graph from builder
     /// let graph = builder.build();
     ///
-    /// // Create iterator over data
-    /// for data in graph.iter() {
-    ///     println!("{data:?}");
+    /// // Create iterator over graph
+    /// for node in graph.iter() {
+    ///     println!("{node:?}");
     /// }
     /// # Ok(())
     /// # }
     /// ```
     #[inline]
-    pub fn iter(&self) -> Iter<'_, T> {
-        self.data.iter()
+    #[must_use]
+    pub fn iter(&self) -> Range<usize> {
+        0..self.data.len()
     }
 }
 
@@ -422,16 +423,14 @@ impl<T> IndexMut<usize> for Graph<T> {
 
 // ----------------------------------------------------------------------------
 
-impl<'a, T> IntoIterator for &'a Graph<T> {
-    type Item = &'a T;
-    type IntoIter = Iter<'a, T>;
+impl<T> IntoIterator for &Graph<T> {
+    type Item = usize;
+    type IntoIter = Range<usize>;
 
     /// Creates an iterator over the graph.
     ///
-    /// This iterator emits the data `T` associated with each node. If you need
-    /// to iterate over the node indices of a graph, use [`Graph::topology`] to
-    /// obtain the [`Topology::incoming`] or [`Topology::outgoing`] adjacency
-    /// list, and iterate over those.
+    /// This iterator emits the node indices, which is exactly the same as
+    /// iterating over the adjacency list using `0..self.len()`.
     ///
     /// # Examples
     ///
@@ -454,9 +453,9 @@ impl<'a, T> IntoIterator for &'a Graph<T> {
     /// // Create graph from builder
     /// let graph = builder.build();
     ///
-    /// // Create iterator over data
-    /// for data in &graph {
-    ///     println!("{data:?}");
+    /// // Create iterator over graph
+    /// for node in &graph {
+    ///     println!("{node:?}");
     /// }
     /// # Ok(())
     /// # }
