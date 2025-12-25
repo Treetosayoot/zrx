@@ -56,7 +56,7 @@ impl<T> Graph<T> {
     /// Panics if the node does not exist, as this indicates that there's a bug
     /// in the code that creates or uses the iterator. While the [`Builder`][]
     /// is designed to be fallible to ensure the structure is valid, methods
-    /// that operate on [`Graph`][] panic on violated invariants.
+    /// that operate on [`Graph`] panic on violated invariants.
     ///
     /// [`Builder`]: crate::graph::Builder
     ///

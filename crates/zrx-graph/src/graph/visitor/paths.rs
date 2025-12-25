@@ -56,7 +56,7 @@ impl<T> Graph<T> {
     /// Panics if the node does not exist, as this indicates that there's a bug
     /// in the code that creates or uses the iterator. While the [`Builder`][]
     /// is designed to be fallible to ensure the structure is valid, methods
-    /// that operate on [`Graph`][] panic on violated invariants.
+    /// that operate on [`Graph`] panic on violated invariants.
     ///
     /// [`Builder`]: crate::graph::Builder
     ///
@@ -145,7 +145,7 @@ impl Iterator for Paths<'_> {
             self.path.truncate(depth);
             self.path.push(node);
 
-            // In case we've reached the target, yield the current path. Note
+            // In case we've reached the target, emit the current path. Note
             // that we need to clone it, since we can't return a reference
             if node == self.target {
                 return Some(self.path.clone());
@@ -161,7 +161,7 @@ impl Iterator for Paths<'_> {
             }
         }
 
-        // No more paths to visit
+        // No more paths to return
         None
     }
 }
