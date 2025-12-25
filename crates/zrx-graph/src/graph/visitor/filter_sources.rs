@@ -89,9 +89,8 @@ impl<T> Graph<T> {
     where
         N: Into<Vec<usize>>,
     {
-        let distance = self.topology.distance();
         FilterSources {
-            distance,
+            distance: self.topology.distance(),
             nodes: nodes.into(),
             index: 0,
         }
