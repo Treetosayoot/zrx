@@ -189,7 +189,7 @@ impl<T> Graph<T> {
     #[inline]
     pub fn traverse<I>(&self, initial: I) -> Traversal
     where
-        I: IntoIterator<Item = usize>,
+        I: AsRef<[usize]>,
     {
         Traversal::new(&self.topology, initial)
     }
