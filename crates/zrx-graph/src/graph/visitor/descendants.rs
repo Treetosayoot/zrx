@@ -23,21 +23,21 @@
 
 // ----------------------------------------------------------------------------
 
-//! Visitor for descendants of a node.
+//! Iterator over descendants of a node.
 
 use ahash::HashSet;
 
-use crate::graph::topology::Topology;
+use crate::graph::topology::Adjacency;
 use crate::graph::Graph;
 
 // ----------------------------------------------------------------------------
 // Structs
 // ----------------------------------------------------------------------------
 
-/// Visitor for descendants of a node.
+/// Iterator over descendants of a node.
 pub struct Descendants<'a> {
-    /// Graph topology.
-    topology: &'a Topology,
+    /// Outgoing edges.
+    outgoing: &'a Adjacency,
     /// Stack for depth-first search.
     stack: Vec<usize>,
     /// Set of visited nodes.
@@ -91,7 +91,7 @@ impl<T> Graph<T> {
     #[must_use]
     pub fn descendants(&self, node: usize) -> Descendants<'_> {
         let mut iter = Descendants {
-            topology: &self.topology,
+            outgoing: self.topology.outgoing(),
             stack: Vec::from([node]),
             visited: HashSet::default(),
         };
@@ -141,12 +141,10 @@ impl Iterator for Descendants<'_> {
     /// # }
     /// ```
     fn next(&mut self) -> Option<Self::Item> {
-        let outgoing = self.topology.outgoing();
-
         // Perform a depth-first search to find all descendants of a node, by
         // exploring them iteratively, not including the node itself
         let node = self.stack.pop()?;
-        for &descendant in outgoing[node].iter().rev() {
+        for &descendant in self.outgoing[node].iter().rev() {
             // If we haven't visited this descendant yet, we put it on the
             // stack after marking it as visited and return it immediately
             if self.visited.insert(descendant) {

@@ -23,19 +23,19 @@
 
 // ----------------------------------------------------------------------------
 
-//! Visitor for paths between two nodes.
+//! Iterator over paths between two nodes.
 
-use crate::graph::topology::Topology;
+use crate::graph::topology::Adjacency;
 use crate::graph::Graph;
 
 // ----------------------------------------------------------------------------
 // Structs
 // ----------------------------------------------------------------------------
 
-/// Visitor for paths between two nodes.
+/// Iterator over paths between two nodes.
 pub struct Paths<'a> {
-    /// Graph topology.
-    topology: &'a Topology,
+    /// Outgoing edges.
+    outgoing: &'a Adjacency,
     /// Target node.
     target: usize,
     /// Stack for depth-first search.
@@ -49,7 +49,7 @@ pub struct Paths<'a> {
 // ----------------------------------------------------------------------------
 
 impl<T> Graph<T> {
-    /// Creates an iterator over all paths between the given nodes.
+    /// Creates an iterator over the paths between the given nodes.
     ///
     /// # Panics
     ///
@@ -91,7 +91,7 @@ impl<T> Graph<T> {
     #[must_use]
     pub fn paths(&self, source: usize, target: usize) -> Paths<'_> {
         Paths {
-            topology: &self.topology,
+            outgoing: self.topology.outgoing(),
             target,
             stack: Vec::from([(source, 0)]),
             path: Vec::from([source]),
@@ -137,8 +137,6 @@ impl Iterator for Paths<'_> {
     /// # }
     /// ```
     fn next(&mut self) -> Option<Self::Item> {
-        let outgoing = self.topology.outgoing();
-
         // Perform a depth-first search to find all paths from the source to
         // the target, and emit them in the order of discovery
         while let Some((node, depth)) = self.stack.pop() {
@@ -157,7 +155,7 @@ impl Iterator for Paths<'_> {
             // first ordering. Additionally, perform a debug assertion to ensure
             // that we don't revisit nodes within the current path, which would
             // lead to infinite loops, but should never happen in a DAG.
-            for &descendant in outgoing[node].iter().rev() {
+            for &descendant in self.outgoing[node].iter().rev() {
                 debug_assert!(!self.path.contains(&descendant));
                 self.stack.push((descendant, depth + 1));
             }
