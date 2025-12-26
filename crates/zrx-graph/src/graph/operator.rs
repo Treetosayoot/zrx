@@ -23,10 +23,6 @@
 
 // ----------------------------------------------------------------------------
 
-//! Graph algorithms.
+//! Graph operators.
 
-mod ancestor;
-mod path;
-
-pub use ancestor::lowest_common_ancestor;
-pub use path::shortest_path_length;
+mod map;

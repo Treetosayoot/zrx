@@ -53,10 +53,10 @@ pub use distance::Distance;
 /// executable form. It's used during [`Traversal`][], so all nodes are visited
 /// in topological order.
 ///
-/// The [`Topology`] is just a wrapper around [`TopologyInner`] with an [`Rc`],
-/// so it can be shared between the [`Graph`][] and [`Traversal`][] structures
-/// without the need for lifetime annotations, which would render incremental
-/// and asynchronous traversals of graphs significantly more complex.
+/// The [`Topology`] data type is just a wrapper around [`TopologyInner`] with
+/// an [`Rc`], so it can be shared between the [`Graph`][] and [`Traversal`][]
+/// structures without the need for lifetime annotations, which would render
+/// incremental and asynchronous traversals of graphs more complex.
 ///
 /// [`Graph`]: crate::graph::Graph
 /// [`Traversal`]: crate::graph::traversal::Traversal

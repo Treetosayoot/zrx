@@ -27,7 +27,6 @@
 
 mod graph;
 
-pub use graph::algorithm;
 pub use graph::topology::{self, Topology};
 pub use graph::traversal::{self, Traversal};
 pub use graph::visitor;

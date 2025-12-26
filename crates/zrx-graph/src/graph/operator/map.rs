@@ -23,24 +23,48 @@
 
 // ----------------------------------------------------------------------------
 
-//! Graph visitors.
+//! Map operator.
 
-mod ancestors;
-mod common_ancestors;
-mod common_descendants;
-mod descendants;
-mod filter_sinks;
-mod filter_sources;
-mod paths;
-mod sinks;
-mod sources;
+use crate::graph::Graph;
 
-pub use ancestors::Ancestors;
-pub use common_ancestors::CommonAncestors;
-pub use common_descendants::CommonDescendants;
-pub use descendants::Descendants;
-pub use filter_sinks::FilterSinks;
-pub use filter_sources::FilterSources;
-pub use paths::Paths;
-pub use sinks::Sinks;
-pub use sources::Sources;
+// ----------------------------------------------------------------------------
+// Implementations
+// ----------------------------------------------------------------------------
+
+impl<T> Graph<T> {
+    /// Maps the nodes to a different type.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use std::error::Error;
+    /// # fn main() -> Result<(), Box<dyn Error>> {
+    /// use zrx_graph::Graph;
+    ///
+    /// // Create graph builder and add nodes
+    /// let mut builder = Graph::builder();
+    /// let a = builder.add_node("a");
+    /// let b = builder.add_node("b");
+    /// let c = builder.add_node("c");
+    ///
+    /// // Create edges between nodes
+    /// builder.add_edge(a, b, 0)?;
+    /// builder.add_edge(b, c, 0)?;
+    ///
+    /// // Create graph from builder and map data
+    /// let graph = builder.build();
+    /// graph.map(str::to_uppercase);
+    /// # Ok(())
+    /// # }
+    /// ```
+    #[inline]
+    pub fn map<F, U>(self, f: F) -> Graph<U>
+    where
+        F: FnMut(T) -> U,
+    {
+        Graph {
+            data: self.data.into_iter().map(f).collect(),
+            topology: self.topology,
+        }
+    }
+}

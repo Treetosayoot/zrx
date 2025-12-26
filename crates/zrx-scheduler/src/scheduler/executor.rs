@@ -84,8 +84,8 @@ where
     /// Creates a frontier engine.
     pub fn new(graph: Graph<Box<dyn Action<I>>>) -> Self {
         let mut interests = HashMap::default();
-        for (n, action) in graph.iter().enumerate() {
-            for interest in action.descriptor().interests() {
+        for n in &graph {
+            for interest in graph[n].descriptor().interests() {
                 interests.entry(*interest).or_insert_with(Vec::new).push(n);
             }
         }

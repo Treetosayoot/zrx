@@ -25,12 +25,13 @@
 
 //! Graph.
 
-use std::ops::{Index, IndexMut};
-use std::slice::Iter;
+use std::ops::{Index, IndexMut, Range};
 
-pub mod algorithm;
 mod builder;
 mod error;
+mod macros;
+pub mod operator;
+mod property;
 pub mod topology;
 pub mod traversal;
 pub mod visitor;
@@ -145,42 +146,6 @@ impl<T> Graph<T> {
         Builder::<T>::new().build()
     }
 
-    /// Maps the nodes to a different type.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// # use std::error::Error;
-    /// # fn main() -> Result<(), Box<dyn Error>> {
-    /// use zrx_graph::Graph;
-    ///
-    /// // Create graph builder and add nodes
-    /// let mut builder = Graph::builder();
-    /// let a = builder.add_node("a");
-    /// let b = builder.add_node("b");
-    /// let c = builder.add_node("c");
-    ///
-    /// // Create edges between nodes
-    /// builder.add_edge(a, b, 0)?;
-    /// builder.add_edge(b, c, 0)?;
-    ///
-    /// // Create graph from builder and map data
-    /// let graph = builder.build();
-    /// graph.map(str::to_uppercase);
-    /// # Ok(())
-    /// # }
-    /// ```
-    #[inline]
-    pub fn map<F, U>(self, f: F) -> Graph<U>
-    where
-        F: FnMut(T) -> U,
-    {
-        Graph {
-            data: self.data.into_iter().map(f).collect(),
-            topology: self.topology,
-        }
-    }
-
     /// Creates a topogical traversal starting from the given initial nodes.
     ///
     /// This method creates a topological traversal of the graph, which allows
@@ -223,85 +188,9 @@ impl<T> Graph<T> {
     #[inline]
     pub fn traverse<I>(&self, initial: I) -> Traversal
     where
-        I: IntoIterator<Item = usize>,
+        I: AsRef<[usize]>,
     {
         Traversal::new(&self.topology, initial)
-    }
-
-    /// Creates an iterator over the sources of the graph.
-    ///
-    /// This method returns an iterator over the source node indices of the
-    /// graph, which are the nodes with no incoming edges.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// # use std::error::Error;
-    /// # fn main() -> Result<(), Box<dyn Error>> {
-    /// use zrx_graph::Graph;
-    ///
-    /// // Create graph builder and add nodes
-    /// let mut builder = Graph::builder();
-    /// let a = builder.add_node("a");
-    /// let b = builder.add_node("b");
-    /// let c = builder.add_node("c");
-    ///
-    /// // Create edges between nodes
-    /// builder.add_edge(a, b, 0)?;
-    /// builder.add_edge(b, c, 0)?;
-    ///
-    /// // Create graph from builder
-    /// let graph = builder.build();
-    ///
-    /// // Create iterator over sources
-    /// for node in graph.sources() {
-    ///     println!("{node:?}");
-    /// }
-    /// # Ok(())
-    /// # }
-    /// ```
-    #[inline]
-    pub fn sources(&self) -> impl Iterator<Item = usize> {
-        let incoming = self.topology.incoming();
-        incoming.iter().filter(|&node| incoming[node].is_empty())
-    }
-
-    /// Creates an iterator over the sinks of the graph.
-    ///
-    /// This method returns an iterator over the sink node indices of the
-    /// graph, which are the nodes with no incoming edges.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// # use std::error::Error;
-    /// # fn main() -> Result<(), Box<dyn Error>> {
-    /// use zrx_graph::Graph;
-    ///
-    /// // Create graph builder and add nodes
-    /// let mut builder = Graph::builder();
-    /// let a = builder.add_node("a");
-    /// let b = builder.add_node("b");
-    /// let c = builder.add_node("c");
-    ///
-    /// // Create edges between nodes
-    /// builder.add_edge(a, b, 0)?;
-    /// builder.add_edge(b, c, 0)?;
-    ///
-    /// // Create graph from builder
-    /// let graph = builder.build();
-    ///
-    /// // Create iterator over sinks
-    /// for node in graph.sinks() {
-    ///     println!("{node:?}");
-    /// }
-    /// # Ok(())
-    /// # }
-    /// ```
-    #[inline]
-    pub fn sinks(&self) -> impl Iterator<Item = usize> {
-        let outgoing = self.topology.outgoing();
-        outgoing.iter().filter(|&node| outgoing[node].is_empty())
     }
 
     /// Creates an iterator over the graph.
@@ -332,16 +221,17 @@ impl<T> Graph<T> {
     /// // Create graph from builder
     /// let graph = builder.build();
     ///
-    /// // Create iterator over data
-    /// for data in graph.iter() {
-    ///     println!("{data:?}");
+    /// // Create iterator over graph
+    /// for node in graph.iter() {
+    ///     println!("{node:?}");
     /// }
     /// # Ok(())
     /// # }
     /// ```
     #[inline]
-    pub fn iter(&self) -> Iter<'_, T> {
-        self.data.iter()
+    #[must_use]
+    pub fn iter(&self) -> Range<usize> {
+        0..self.data.len()
     }
 }
 
@@ -363,20 +253,6 @@ impl<T> Graph<T> {
     #[inline]
     pub fn is_empty(&self) -> bool {
         self.data.is_empty()
-    }
-
-    /// Returns whether the given node is a source.
-    #[inline]
-    pub fn is_source(&self, node: usize) -> bool {
-        let incoming = self.topology.incoming();
-        incoming[node].is_empty()
-    }
-
-    /// Returns whether the given node is a sink.
-    #[inline]
-    pub fn is_sink(&self, node: usize) -> bool {
-        let outgoing = self.topology.outgoing();
-        outgoing[node].is_empty()
     }
 }
 
@@ -470,16 +346,14 @@ impl<T> IndexMut<usize> for Graph<T> {
 
 // ----------------------------------------------------------------------------
 
-impl<'a, T> IntoIterator for &'a Graph<T> {
-    type Item = &'a T;
-    type IntoIter = Iter<'a, T>;
+impl<T> IntoIterator for &Graph<T> {
+    type Item = usize;
+    type IntoIter = Range<usize>;
 
     /// Creates an iterator over the graph.
     ///
-    /// This iterator emits the data `T` associated with each node. If you need
-    /// to iterate over the node indices of a graph, use [`Graph::topology`] to
-    /// obtain the [`Topology::incoming`] or [`Topology::outgoing`] adjacency
-    /// list, and iterate over those.
+    /// This iterator emits the node indices, which is exactly the same as
+    /// iterating over the adjacency list using `0..self.len()`.
     ///
     /// # Examples
     ///
@@ -502,9 +376,9 @@ impl<'a, T> IntoIterator for &'a Graph<T> {
     /// // Create graph from builder
     /// let graph = builder.build();
     ///
-    /// // Create iterator over data
-    /// for data in &graph {
-    ///     println!("{data:?}");
+    /// // Create iterator over graph
+    /// for node in &graph {
+    ///     println!("{node:?}");
     /// }
     /// # Ok(())
     /// # }

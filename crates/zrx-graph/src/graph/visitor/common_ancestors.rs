@@ -23,25 +23,23 @@
 
 // ----------------------------------------------------------------------------
 
-//! Iterator over descendants of a node.
+//! Iterator over common ancestors of a set of nodes.
 
-use ahash::HashSet;
+use std::collections::BTreeSet;
 
-use crate::graph::topology::Adjacency;
+use crate::graph::topology::Distance;
 use crate::graph::Graph;
 
 // ----------------------------------------------------------------------------
 // Structs
 // ----------------------------------------------------------------------------
 
-/// Iterator over descendants of a node.
-pub struct Descendants<'a> {
-    /// Outgoing edges.
-    outgoing: &'a Adjacency,
-    /// Stack for depth-first search.
-    stack: Vec<usize>,
-    /// Set of visited nodes.
-    visited: HashSet<usize>,
+/// Iterator over common ancestors of a set of nodes.
+pub struct CommonAncestors<'a> {
+    /// Distance matrix.
+    distance: &'a Distance,
+    /// Set of common ancestors.
+    ancestors: BTreeSet<usize>,
 }
 
 // ----------------------------------------------------------------------------
@@ -49,11 +47,18 @@ pub struct Descendants<'a> {
 // ----------------------------------------------------------------------------
 
 impl<T> Graph<T> {
-    /// Creates an iterator over the descendants of the given node.
+    /// Creates an iterator over the common ancestors of the set of nodes.
+    ///
+    /// This method creates an iterator over the common ancestores of a given
+    /// set of nodes, and emits them in layers, starting with the lowest common
+    /// ancestors (LCA). In directed acyclic graphs, nodes might have multiple
+    /// common ancestors, since there can be multiple paths leading to the nodes
+    /// in the provided set. The iterator peels these common ancestors layer by
+    /// layer, emitting all sinks among the remaining nodes at each step.
     ///
     /// # Panics
     ///
-    /// Panics if the node does not exist, as this indicates that there's a bug
+    /// Panics if a node does not exist, as this indicates that there's a bug
     /// in the code that creates or uses the iterator. While the [`Builder`][]
     /// is designed to be fallible to ensure the structure is valid, methods
     /// that operate on [`Graph`] panic on violated invariants.
@@ -75,31 +80,41 @@ impl<T> Graph<T> {
     ///
     /// // Create edges between nodes
     /// builder.add_edge(a, b, 0)?;
-    /// builder.add_edge(b, c, 0)?;
+    /// builder.add_edge(a, c, 0)?;
     ///
     /// // Create graph from builder
     /// let graph = builder.build();
     ///
-    /// // Create iterator over descendants
-    /// for node in graph.descendants(a) {
-    ///     println!("{node:?}");
+    /// // Create iterator over common ancestors
+    /// for nodes in graph.common_ancestors([b, c]) {
+    ///     println!("{nodes:?}");
     /// }
     /// # Ok(())
     /// # }
     /// ```
-    #[inline]
-    #[must_use]
-    pub fn descendants(&self, node: usize) -> Descendants<'_> {
-        let mut iter = Descendants {
-            outgoing: self.topology.outgoing(),
-            stack: Vec::from([node]),
-            visited: HashSet::default(),
-        };
+    pub fn common_ancestors<N>(&self, nodes: N) -> CommonAncestors<'_>
+    where
+        N: AsRef<[usize]>,
+    {
+        let distance = self.topology.distance();
+        let nodes = nodes.as_ref();
 
-        // Skip the initial node itself - it's simpler to just skip the initial
-        // node, so we can keep the iterator implementation plain and simple
-        iter.next();
-        iter
+        // Compute common ancestors by ensuring that each node in the given set
+        // of nodes is reachable from the current node being considered
+        let mut ancestors = BTreeSet::default();
+        for ancestor in self {
+            if nodes.iter().all(|&node| {
+                node != ancestor && distance[ancestor][node] != 255
+            }) {
+                ancestors.insert(ancestor);
+            }
+        }
+
+        // Create and return iterator
+        CommonAncestors {
+            distance: self.topology.distance(),
+            ancestors,
+        }
     }
 }
 
@@ -107,10 +122,10 @@ impl<T> Graph<T> {
 // Trait implementations
 // ----------------------------------------------------------------------------
 
-impl Iterator for Descendants<'_> {
-    type Item = usize;
+impl Iterator for CommonAncestors<'_> {
+    type Item = Vec<usize>;
 
-    /// Returns the next descendant.
+    /// Returns the next layer of common ancestors.
     ///
     /// # Examples
     ///
@@ -127,33 +142,41 @@ impl Iterator for Descendants<'_> {
     ///
     /// // Create edges between nodes
     /// builder.add_edge(a, b, 0)?;
-    /// builder.add_edge(b, c, 0)?;
+    /// builder.add_edge(a, c, 0)?;
     ///
     /// // Create graph from builder
     /// let graph = builder.build();
     ///
-    /// // Create iterator over descendants
-    /// let mut descendants = graph.descendants(a);
-    /// while let Some(node) = descendants.next() {
-    ///     println!("{node:?}");
+    /// // Create iterator over common ancestors
+    /// let mut ancestors = graph.common_ancestors([b, c]);
+    /// while let Some(nodes) = ancestors.next() {
+    ///     println!("{nodes:?}");
     /// }
     /// # Ok(())
     /// # }
     /// ```
     fn next(&mut self) -> Option<Self::Item> {
-        // Perform a depth-first search to find all descendants of a node, by
-        // exploring them iteratively, not including the node itself
-        let node = self.stack.pop()?;
-        for &descendant in self.outgoing[node].iter().rev() {
-            // If we haven't visited this descendant yet, we put it on the
-            // stack after marking it as visited and return it immediately
-            if self.visited.insert(descendant) {
-                self.stack.push(descendant);
+        if self.ancestors.is_empty() {
+            return None;
+        }
+
+        // Compute the next layer of common ancestors - all nodes that are not
+        // ancestors of any other remaining common ancestor. This process is
+        // commonly referred to as peeling, where we iteratively remove layers
+        // of from the set of common ancestors.
+        let mut layer = Vec::new();
+        for &ancestor in &self.ancestors {
+            if !self.ancestors.iter().any(|&node| {
+                ancestor != node && self.distance[ancestor][node] != 255
+            }) {
+                layer.push(ancestor);
             }
         }
 
-        // Return the next descendant
-        Some(node)
+        // Remove all nodes in the layer from the set of common ancestors, and
+        // return the layer if it's not empty. Otherwise, we're done.
+        self.ancestors.retain(|node| !layer.contains(node));
+        (!layer.is_empty()).then_some(layer)
     }
 }
 
@@ -164,67 +187,37 @@ impl Iterator for Descendants<'_> {
 #[cfg(test)]
 mod tests {
 
-    mod descendants {
+    mod common_ancestors {
         use crate::graph;
 
         #[test]
         fn handles_graph() {
             let graph = graph! {
-                "a" => "b", "a" => "c",
+                "a" => "d",
                 "b" => "d", "b" => "e",
-                "c" => "f",
-                "d" => "g",
-                "e" => "g", "e" => "h",
-                "f" => "h",
-                "g" => "i",
-                "h" => "i",
+                "c" => "f", "c" => "g",
+                "d" => "f", "d" => "g",
+                "e" => "g",
             };
-            for (node, descendants) in [
-                (0, vec![1, 3, 6, 8, 4, 7, 2, 5]),
-                (1, vec![3, 6, 8, 4, 7]),
-                (2, vec![5, 7, 8]),
-                (3, vec![6, 8]),
-                (4, vec![6, 8, 7]),
-                (5, vec![7, 8]),
-                (6, vec![8]),
-                (7, vec![8]),
-                (8, vec![]),
-            ] {
-                assert_eq!(
-                    graph.descendants(node).collect::<Vec<_>>(),
-                    descendants
-                );
-            }
+            assert_eq!(
+                graph.common_ancestors([5, 6]).collect::<Vec<_>>(),
+                vec![vec![1, 4], vec![0, 2]]
+            );
         }
 
         #[test]
         fn handles_multi_graph() {
             let graph = graph! {
-                "a" => "b", "a" => "c", "a" => "c",
-                "b" => "d", "b" => "e",
-                "c" => "f",
-                "d" => "g",
-                "e" => "g", "e" => "h",
-                "f" => "h",
-                "g" => "i",
-                "h" => "i",
+                "a" => "d",
+                "b" => "d", "b" => "e", "b" => "e",
+                "c" => "f", "c" => "g",
+                "d" => "f", "d" => "g",
+                "e" => "g",
             };
-            for (node, descendants) in [
-                (0, vec![1, 3, 6, 8, 4, 7, 2, 5]),
-                (1, vec![3, 6, 8, 4, 7]),
-                (2, vec![5, 7, 8]),
-                (3, vec![6, 8]),
-                (4, vec![6, 8, 7]),
-                (5, vec![7, 8]),
-                (6, vec![8]),
-                (7, vec![8]),
-                (8, vec![]),
-            ] {
-                assert_eq!(
-                    graph.descendants(node).collect::<Vec<_>>(),
-                    descendants
-                );
-            }
+            assert_eq!(
+                graph.common_ancestors([5, 6]).collect::<Vec<_>>(),
+                vec![vec![1, 4], vec![0, 2]]
+            );
         }
     }
 }

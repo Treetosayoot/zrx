@@ -23,9 +23,7 @@
 
 // ----------------------------------------------------------------------------
 
-//! Iterator over descendants of a node.
-
-use ahash::HashSet;
+//! Iterator over sources.
 
 use crate::graph::topology::Adjacency;
 use crate::graph::Graph;
@@ -34,14 +32,12 @@ use crate::graph::Graph;
 // Structs
 // ----------------------------------------------------------------------------
 
-/// Iterator over descendants of a node.
-pub struct Descendants<'a> {
-    /// Outgoing edges.
-    outgoing: &'a Adjacency,
-    /// Stack for depth-first search.
-    stack: Vec<usize>,
-    /// Set of visited nodes.
-    visited: HashSet<usize>,
+/// Iterator over sources.
+pub struct Sources<'a> {
+    /// Incoming edges.
+    incoming: &'a Adjacency,
+    /// Current index.
+    index: usize,
 }
 
 // ----------------------------------------------------------------------------
@@ -49,16 +45,10 @@ pub struct Descendants<'a> {
 // ----------------------------------------------------------------------------
 
 impl<T> Graph<T> {
-    /// Creates an iterator over the descendants of the given node.
+    /// Creates an iterator over the sources.
     ///
-    /// # Panics
-    ///
-    /// Panics if the node does not exist, as this indicates that there's a bug
-    /// in the code that creates or uses the iterator. While the [`Builder`][]
-    /// is designed to be fallible to ensure the structure is valid, methods
-    /// that operate on [`Graph`] panic on violated invariants.
-    ///
-    /// [`Builder`]: crate::graph::Builder
+    /// This method returns an iterator over the source node indices of the
+    /// graph, which are the nodes with no incoming edges.
     ///
     /// # Examples
     ///
@@ -80,8 +70,8 @@ impl<T> Graph<T> {
     /// // Create graph from builder
     /// let graph = builder.build();
     ///
-    /// // Create iterator over descendants
-    /// for node in graph.descendants(a) {
+    /// // Create iterator over sources
+    /// for node in graph.sources() {
     ///     println!("{node:?}");
     /// }
     /// # Ok(())
@@ -89,17 +79,11 @@ impl<T> Graph<T> {
     /// ```
     #[inline]
     #[must_use]
-    pub fn descendants(&self, node: usize) -> Descendants<'_> {
-        let mut iter = Descendants {
-            outgoing: self.topology.outgoing(),
-            stack: Vec::from([node]),
-            visited: HashSet::default(),
-        };
-
-        // Skip the initial node itself - it's simpler to just skip the initial
-        // node, so we can keep the iterator implementation plain and simple
-        iter.next();
-        iter
+    pub fn sources(&self) -> Sources<'_> {
+        Sources {
+            incoming: self.topology.incoming(),
+            index: 0,
+        }
     }
 }
 
@@ -107,10 +91,10 @@ impl<T> Graph<T> {
 // Trait implementations
 // ----------------------------------------------------------------------------
 
-impl Iterator for Descendants<'_> {
+impl Iterator for Sources<'_> {
     type Item = usize;
 
-    /// Returns the next descendant.
+    /// Returns the next source.
     ///
     /// # Examples
     ///
@@ -132,28 +116,27 @@ impl Iterator for Descendants<'_> {
     /// // Create graph from builder
     /// let graph = builder.build();
     ///
-    /// // Create iterator over descendants
-    /// let mut descendants = graph.descendants(a);
-    /// while let Some(node) = descendants.next() {
+    /// // Create iterator over sources
+    /// let mut sources = graph.sources();
+    /// while let Some(node) = sources.next() {
     ///     println!("{node:?}");
     /// }
     /// # Ok(())
     /// # }
     /// ```
     fn next(&mut self) -> Option<Self::Item> {
-        // Perform a depth-first search to find all descendants of a node, by
-        // exploring them iteratively, not including the node itself
-        let node = self.stack.pop()?;
-        for &descendant in self.outgoing[node].iter().rev() {
-            // If we haven't visited this descendant yet, we put it on the
-            // stack after marking it as visited and return it immediately
-            if self.visited.insert(descendant) {
-                self.stack.push(descendant);
+        while self.index < self.incoming.len() {
+            let node = self.index;
+            self.index += 1;
+
+            // Emit the node if it has no incoming edges
+            if self.incoming[node].is_empty() {
+                return Some(node);
             }
         }
 
-        // Return the next descendant
-        Some(node)
+        // No more sources to return
+        None
     }
 }
 
@@ -164,7 +147,7 @@ impl Iterator for Descendants<'_> {
 #[cfg(test)]
 mod tests {
 
-    mod descendants {
+    mod sources {
         use crate::graph;
 
         #[test]
@@ -179,22 +162,10 @@ mod tests {
                 "g" => "i",
                 "h" => "i",
             };
-            for (node, descendants) in [
-                (0, vec![1, 3, 6, 8, 4, 7, 2, 5]),
-                (1, vec![3, 6, 8, 4, 7]),
-                (2, vec![5, 7, 8]),
-                (3, vec![6, 8]),
-                (4, vec![6, 8, 7]),
-                (5, vec![7, 8]),
-                (6, vec![8]),
-                (7, vec![8]),
-                (8, vec![]),
-            ] {
-                assert_eq!(
-                    graph.descendants(node).collect::<Vec<_>>(),
-                    descendants
-                );
-            }
+            assert_eq!(
+                graph.sources().collect::<Vec<_>>(), // fmt
+                vec![0]
+            );
         }
 
         #[test]
@@ -209,22 +180,10 @@ mod tests {
                 "g" => "i",
                 "h" => "i",
             };
-            for (node, descendants) in [
-                (0, vec![1, 3, 6, 8, 4, 7, 2, 5]),
-                (1, vec![3, 6, 8, 4, 7]),
-                (2, vec![5, 7, 8]),
-                (3, vec![6, 8]),
-                (4, vec![6, 8, 7]),
-                (5, vec![7, 8]),
-                (6, vec![8]),
-                (7, vec![8]),
-                (8, vec![]),
-            ] {
-                assert_eq!(
-                    graph.descendants(node).collect::<Vec<_>>(),
-                    descendants
-                );
-            }
+            assert_eq!(
+                graph.sources().collect::<Vec<_>>(), // fmt
+                vec![0]
+            );
         }
     }
 }

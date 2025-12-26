@@ -23,21 +23,21 @@
 
 // ----------------------------------------------------------------------------
 
-//! Visitor for ancestors of a node.
+//! Iterator over ancestors of a node.
 
 use ahash::HashSet;
 
-use crate::graph::topology::Topology;
+use crate::graph::topology::Adjacency;
 use crate::graph::Graph;
 
 // ----------------------------------------------------------------------------
 // Structs
 // ----------------------------------------------------------------------------
 
-/// Visitor for ancestors of a node.
+/// Iterator over ancestors of a node.
 pub struct Ancestors<'a> {
-    /// Graph topology.
-    topology: &'a Topology,
+    /// Incoming edges.
+    incoming: &'a Adjacency,
     /// Stack for depth-first search.
     stack: Vec<usize>,
     /// Set of visited nodes.
@@ -50,6 +50,15 @@ pub struct Ancestors<'a> {
 
 impl<T> Graph<T> {
     /// Creates an iterator over the ancestors of the given node.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the node does not exist, as this indicates that there's a bug
+    /// in the code that creates or uses the iterator. While the [`Builder`][]
+    /// is designed to be fallible to ensure the structure is valid, methods
+    /// that operate on [`Graph`] panic on violated invariants.
+    ///
+    /// [`Builder`]: crate::graph::Builder
     ///
     /// # Examples
     ///
@@ -81,11 +90,16 @@ impl<T> Graph<T> {
     #[inline]
     #[must_use]
     pub fn ancestors(&self, node: usize) -> Ancestors<'_> {
-        Ancestors {
-            topology: &self.topology,
+        let mut iter = Ancestors {
+            incoming: self.topology.incoming(),
             stack: Vec::from([node]),
             visited: HashSet::default(),
-        }
+        };
+
+        // Skip the initial node itself - it's simpler to just skip the initial
+        // node, so we can keep the iterator implementation plain and simple
+        iter.next();
+        iter
     }
 }
 
@@ -127,22 +141,90 @@ impl Iterator for Ancestors<'_> {
     /// # }
     /// ```
     fn next(&mut self) -> Option<Self::Item> {
-        let incoming = self.topology.incoming();
-
-        // Perform a depth-first search to find all ancestors, using a stack
-        // over recursion, as it's faster and more efficient memory-wise
-        while let Some(node) = self.stack.pop() {
-            for &ancestor in &incoming[node] {
-                // If we haven't visited this ancestor yet, we put it on the
-                // stack after marking it as visited and return it immediately
-                if self.visited.insert(ancestor) {
-                    self.stack.push(ancestor);
-                    return Some(ancestor);
-                }
+        // Perform a depth-first search to find all ancestors of a node, by
+        // exploring them iteratively, not including the node itself
+        let node = self.stack.pop()?;
+        for &ancestor in self.incoming[node].iter().rev() {
+            // If we haven't visited this ancestor yet, we put it on the
+            // stack after marking it as visited and return it immediately
+            if self.visited.insert(ancestor) {
+                self.stack.push(ancestor);
             }
         }
 
-        // No more ancestors to visit
-        None
+        // Return the next ancestor
+        Some(node)
+    }
+}
+
+// ----------------------------------------------------------------------------
+// Tests
+// ----------------------------------------------------------------------------
+
+#[cfg(test)]
+mod tests {
+
+    mod ancestors {
+        use crate::graph;
+
+        #[test]
+        fn handles_graph() {
+            let graph = graph! {
+                "a" => "b", "a" => "c",
+                "b" => "d", "b" => "e",
+                "c" => "f",
+                "d" => "g",
+                "e" => "g", "e" => "h",
+                "f" => "h",
+                "g" => "i",
+                "h" => "i",
+            };
+            for (node, ancestors) in [
+                (0, vec![]),
+                (1, vec![0]),
+                (2, vec![0]),
+                (3, vec![1, 0]),
+                (4, vec![1, 0]),
+                (5, vec![2, 0]),
+                (6, vec![3, 1, 0, 4]),
+                (7, vec![4, 1, 0, 5, 2]),
+                (8, vec![6, 3, 1, 0, 4, 7, 5, 2]),
+            ] {
+                assert_eq!(
+                    graph.ancestors(node).collect::<Vec<_>>(),
+                    ancestors
+                );
+            }
+        }
+
+        #[test]
+        fn handles_multi_graph() {
+            let graph = graph! {
+                "a" => "b", "a" => "c", "a" => "c",
+                "b" => "d", "b" => "e",
+                "c" => "f",
+                "d" => "g",
+                "e" => "g", "e" => "h",
+                "f" => "h",
+                "g" => "i",
+                "h" => "i",
+            };
+            for (node, ancestors) in [
+                (0, vec![]),
+                (1, vec![0]),
+                (2, vec![0]),
+                (3, vec![1, 0]),
+                (4, vec![1, 0]),
+                (5, vec![2, 0]),
+                (6, vec![3, 1, 0, 4]),
+                (7, vec![4, 1, 0, 5, 2]),
+                (8, vec![6, 3, 1, 0, 4, 7, 5, 2]),
+            ] {
+                assert_eq!(
+                    graph.ancestors(node).collect::<Vec<_>>(),
+                    ancestors
+                );
+            }
+        }
     }
 }
