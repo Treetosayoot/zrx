@@ -26,12 +26,14 @@
 //! Graph visitors.
 
 mod ancestors;
+mod common_ancestors;
 mod descendants;
 mod filter_sinks;
 mod filter_sources;
 mod paths;
 
 pub use ancestors::Ancestors;
+pub use common_ancestors::CommonAncestors;
 pub use descendants::Descendants;
 pub use filter_sinks::FilterSinks;
 pub use filter_sources::FilterSources;
