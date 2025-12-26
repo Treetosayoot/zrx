@@ -49,6 +49,11 @@ pub struct FilterSources<'a> {
 impl<T> Graph<T> {
     /// Creates an iterator over the sources in the given set of nodes.
     ///
+    /// This method creates a view over the provided set of nodes, representing
+    /// an embedded subgraph, and emits only those nodes that are sources within
+    /// this subgraph. Sources are nodes that do not have incoming edges from
+    /// other nodes in the given set.
+    ///
     /// # Panics
     ///
     /// Panics if a node does not exist, as this indicates that there's a bug
@@ -85,6 +90,7 @@ impl<T> Graph<T> {
     /// # Ok(())
     /// # }
     /// ```
+    #[inline]
     pub fn filter_sources<N>(&self, nodes: N) -> FilterSources<'_>
     where
         N: Into<Vec<usize>>,

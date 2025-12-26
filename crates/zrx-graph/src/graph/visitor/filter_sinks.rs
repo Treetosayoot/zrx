@@ -49,6 +49,11 @@ pub struct FilterSinks<'a> {
 impl<T> Graph<T> {
     /// Creates an iterator over the sinks in the given set of nodes.
     ///
+    /// This method creates a view over the provided set of nodes, representing
+    /// an embedded subgraph, and emits only those nodes that are sinks within
+    /// this subgraph. Sinks are nodes that do not have outgoing edges to
+    /// other nodes in the given set.
+    ///
     /// # Panics
     ///
     /// Panics if a node does not exist, as this indicates that there's a bug
@@ -85,6 +90,7 @@ impl<T> Graph<T> {
     /// # Ok(())
     /// # }
     /// ```
+    #[inline]
     pub fn filter_sinks<N>(&self, nodes: N) -> FilterSinks<'_>
     where
         N: Into<Vec<usize>>,

@@ -26,7 +26,6 @@
 //! Graph.
 
 use std::ops::{Index, IndexMut, Range};
-use std::slice::Iter;
 
 mod builder;
 mod error;
