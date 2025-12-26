@@ -193,44 +193,6 @@ impl<T> Graph<T> {
         Traversal::new(&self.topology, initial)
     }
 
-    /// Creates an iterator over the sources of the graph.
-    ///
-    /// This method returns an iterator over the source node indices of the
-    /// graph, which are the nodes with no incoming edges.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// # use std::error::Error;
-    /// # fn main() -> Result<(), Box<dyn Error>> {
-    /// use zrx_graph::Graph;
-    ///
-    /// // Create graph builder and add nodes
-    /// let mut builder = Graph::builder();
-    /// let a = builder.add_node("a");
-    /// let b = builder.add_node("b");
-    /// let c = builder.add_node("c");
-    ///
-    /// // Create edges between nodes
-    /// builder.add_edge(a, b, 0)?;
-    /// builder.add_edge(b, c, 0)?;
-    ///
-    /// // Create graph from builder
-    /// let graph = builder.build();
-    ///
-    /// // Create iterator over sources
-    /// for node in graph.sources() {
-    ///     println!("{node:?}");
-    /// }
-    /// # Ok(())
-    /// # }
-    /// ```
-    #[inline]
-    pub fn sources(&self) -> impl Iterator<Item = usize> {
-        let incoming = self.topology.incoming();
-        incoming.iter().filter(|&node| incoming[node].is_empty())
-    }
-
     /// Creates an iterator over the sinks of the graph.
     ///
     /// This method returns an iterator over the sink node indices of the
